@@ -1,0 +1,9 @@
+{
+  "name": "@rmlis/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RMLIS database schema and SQL artifacts",
+  "scripts": {
+    "schema:print": "node -e \"console.log('Use packages/db/sql/schema.sql with your migration tool')\""
+  }
+}
