@@ -1,9 +1,13 @@
 import { Router } from "express";
 
-import { getLicenseOverview } from "../controllers/licenseController";
+import {
+  getExpiringLicensesController,
+  getLicenseOverview
+} from "../controllers/licenseController";
 
 const router = Router();
 
 router.get("/licenses/overview", getLicenseOverview);
+router.get("/licenses/expiring", getExpiringLicensesController);
 
 export { router as apiRouter };

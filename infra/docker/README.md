@@ -1,3 +1,7 @@
 # docker
 
-Infrastructure container assets placeholder.
+Infrastructure container assets.
+
+Run from this directory:
+
+`docker compose up --build`

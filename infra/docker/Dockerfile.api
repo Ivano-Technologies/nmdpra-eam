@@ -1,0 +1,12 @@
+FROM node:20
+
+WORKDIR /app
+
+COPY . .
+
+RUN corepack enable
+ENV CI=true
+RUN pnpm install
+RUN pnpm --filter @rmlis/api build
+
+CMD ["pnpm", "--filter", "@rmlis/api", "start"]

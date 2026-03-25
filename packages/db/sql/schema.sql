@@ -31,8 +31,9 @@ SELECT
   l.status,
   (l.expiry_date - CURRENT_DATE)::INT AS days_to_expiry,
   CASE
-    WHEN l.expiry_date < CURRENT_DATE THEN 'expired'
-    WHEN l.expiry_date <= CURRENT_DATE + INTERVAL '30 days' THEN 'expiring_soon'
-    ELSE 'valid'
+    WHEN l.expiry_date < CURRENT_DATE THEN 'EXPIRED'
+    WHEN l.expiry_date <= CURRENT_DATE + INTERVAL '30 days' THEN 'CRITICAL'
+    WHEN l.expiry_date <= CURRENT_DATE + INTERVAL '60 days' THEN 'WARNING'
+    ELSE 'SAFE'
   END AS expiry_status
 FROM licenses l;
