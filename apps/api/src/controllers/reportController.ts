@@ -34,6 +34,7 @@ export const getMvpPdf = async (_req: Request, res: Response): Promise<void> => 
   }
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", 'attachment; filename="rmlis-mvp-report.pdf"');
+  res.setHeader("Cache-Control", "no-store");
   res.status(200).send(pdf);
 };
 

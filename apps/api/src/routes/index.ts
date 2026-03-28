@@ -7,9 +7,11 @@ import {
   getRiskRankingController
 } from "../controllers/licenseController";
 import { getMvpPdf, postMvpEmail } from "../controllers/reportController";
+import { sendHealth } from "../lib/healthHandler";
 
 const router = Router();
 
+router.get("/health", sendHealth);
 router.get("/licenses/overview", getLicenseOverview);
 router.get("/licenses/expiring", getExpiringLicensesController);
 router.get("/licenses/risk-ranking", getRiskRankingController);

@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 
-import { readApiVersion } from "./lib/readVersion";
+import type { RequestWithStartTime } from "./lib/healthHandler";
+import { sendHealth } from "./lib/healthHandler";
 import { resolvePublicDir } from "./lib/publicDir";
 import { errorHandler } from "./middleware/errorHandler";
 import { apiRouter } from "./routes";
@@ -11,7 +12,11 @@ import { apiRouter } from "./routes";
 dotenv.config();
 
 const app = express();
-const version = readApiVersion();
+
+app.use((req, res, next) => {
+  (req as RequestWithStartTime).startTime = Date.now();
+  next();
+});
 
 if (process.env.TRUST_PROXY === "1") {
   app.set("trust proxy", 1);
@@ -43,14 +48,7 @@ app.use(
 );
 app.use(express.json({ limit: "512kb" }));
 
-app.get("/health", (_req, res) => {
-  res.status(200).json({
-    ok: true,
-    service: "nmdpra-rmlis-api",
-    version,
-    convexConfigured: Boolean(process.env.CONVEX_URL?.trim())
-  });
-});
+app.get("/health", sendHealth);
 
 const publicDir = resolvePublicDir();
 app.use(express.static(publicDir, { index: false, maxAge: process.env.NODE_ENV === "production" ? "1h" : 0 }));

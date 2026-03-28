@@ -1,11 +1,13 @@
 {
   "name": "nmdpra-eam",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @rmlis/shared build && pnpm --filter @rmlis/reporting build && pnpm --filter @rmlis/api build",
+    "build:all": "pnpm -r build",
     "ingest": "pnpm --filter @rmlis/db ingest",
     "report:run": "pnpm --filter @rmlis/reporting report:run"
   },
