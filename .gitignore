@@ -1,5 +1,8 @@
 node_modules/
 dist/
+
+# Accidental JS emit under src/ (keep compiled output in dist/ only)
+**/src/**/*.js
 .DS_Store
 .env
 .env.*
