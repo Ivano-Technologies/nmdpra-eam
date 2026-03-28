@@ -6,10 +6,18 @@
     "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@rmlis/shared": ["../../packages/shared/dist/index"],
+      "@rmlis/shared/*": ["../../packages/shared/dist/*"],
+      "@rmlis/reporting": ["../../services/reporting/dist/index"],
+      "@rmlis/reporting/*": ["../../services/reporting/dist/*"]
+    },
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"]
 }
