@@ -2,8 +2,21 @@
   "name": "@rmlis/db",
   "version": "0.1.0",
   "private": true,
-  "description": "RMLIS database schema and SQL artifacts",
+  "description": "RMLIS database SQL artifacts and Convex ingestion scripts",
   "scripts": {
-    "schema:print": "node -e \"console.log('Use packages/db/sql/schema.sql with your migration tool')\""
+    "build": "node -e \"process.exit(0)\"",
+    "ingest": "tsx scripts/ingest.ts",
+    "schema:print": "node -e \"console.log('See packages/db/sql/schema.sql')\""
+  },
+  "dependencies": {
+    "@rmlis/shared": "workspace:*",
+    "convex": "^1.34.1",
+    "dotenv": "^17.3.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   }
 }

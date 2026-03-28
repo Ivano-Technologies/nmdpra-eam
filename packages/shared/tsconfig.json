@@ -4,12 +4,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2022"],
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
     "outDir": "dist",
     "rootDir": "src",
-    "declaration": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
   "include": ["src"]

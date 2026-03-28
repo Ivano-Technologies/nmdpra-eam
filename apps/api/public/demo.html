@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NMDPRA RMLIS — Client demo</title>
+    <link rel="stylesheet" href="/demo.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="top">
+      <div class="top-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <div class="brand-title">NMDPRA</div>
+            <div class="brand-sub">Regulatory Monitoring &amp; License Intelligence</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span id="health-pill" class="pill pill-muted" role="status">Checking API…</span>
+          <button type="button" id="btn-refresh" class="btn">Refresh data</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="main">
+      <p class="lede">
+        Stakeholder demo: live licence buckets, risk ranking, and exports. Same-origin requests use
+        <code>/api</code>. For a static page on another port, append
+        <code>?api=http://localhost:3000</code> to this URL.
+      </p>
+
+      <div id="banner-error" class="banner banner-error hidden" role="alert"></div>
+
+      <section class="panel" aria-labelledby="h-expiring">
+        <div class="panel-head">
+          <h2 id="h-expiring">Expiring &amp; expired licences</h2>
+          <p class="panel-meta" id="expiring-meta"></p>
+        </div>
+        <div id="expiring-loading" class="skeleton-grid" aria-hidden="true">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+        <div id="expiring-content" class="hidden"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-risk">
+        <div class="panel-head">
+          <h2 id="h-risk">Top risk (sample)</h2>
+        </div>
+        <div id="risk-loading" class="skeleton-list" aria-hidden="true">
+          <div class="skeleton row"></div>
+          <div class="skeleton row"></div>
+          <div class="skeleton row"></div>
+        </div>
+        <div id="risk-content" class="hidden"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-exports">
+        <h2 id="h-exports">Exports</h2>
+        <p class="muted">Downloads open in a new tab; ensure pop-ups are allowed for PDF.</p>
+        <ul class="export-list">
+          <li>
+            <a id="link-csv" class="export-link" href="#" target="_blank" rel="noopener"
+              >Download CSV (full register)</a
+            >
+          </li>
+          <li>
+            <a id="link-pdf" class="export-link" href="#" target="_blank" rel="noopener"
+              >Download MVP executive PDF</a
+            >
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p>Demo UI — not production authentication. API: <code id="api-foot"></code></p>
+    </footer>
+
+    <script src="/demo.js" defer></script>
+  </body>
+</html>

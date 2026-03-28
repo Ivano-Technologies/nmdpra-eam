@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NMDPRA License Compliance Report</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        padding: 28px 32px 40px;
+        color: #1a1a1a;
+        font-size: 12px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+        gap: 16px;
+      }
+      .logo-mark {
+        flex-shrink: 0;
+        min-width: 72px;
+        padding: 10px 12px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #0a2540;
+        border: 2px solid #0a2540;
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+      h1 {
+        color: #0a2540;
+        margin: 0 0 4px;
+        font-size: 22px;
+      }
+      .subtitle {
+        color: #666;
+        margin-bottom: 4px;
+      }
+      .prepared {
+        color: #0a2540;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+      .kpi-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .kpi {
+        flex: 1;
+        min-width: 120px;
+        background: #f8fafc;
+        padding: 14px 16px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+      }
+      .kpi h2 {
+        margin: 0;
+        color: #0a2540;
+        font-size: 24px;
+      }
+      .kpi p {
+        margin: 6px 0 0;
+        font-size: 11px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .section {
+        margin-top: 28px;
+      }
+      .section h2 {
+        color: #0a2540;
+        font-size: 14px;
+        margin: 0 0 10px;
+      }
+      .risk-note {
+        background: #f1f5f9;
+        border-left: 4px solid #0a2540;
+        padding: 10px 14px;
+        margin: 12px 0 16px;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #334155;
+      }
+      .chart {
+        margin-top: 8px;
+        text-align: center;
+      }
+      .chart img {
+        max-width: 100%;
+        height: auto;
+      }
+      .caption {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 8px;
+      }
+      .caption:empty {
+        display: none;
+      }
+      tr.row-critical td {
+        background: #fef2f2 !important;
+        border-bottom-color: #fecaca;
+      }
+      tr.row-warning td {
+        background: #fffbeb !important;
+        border-bottom-color: #fde68a;
+      }
+      tr.row-critical td.band-cell {
+        color: #b91c1c;
+        font-weight: 700;
+      }
+      tr.row-warning td.band-cell {
+        color: #b45309;
+        font-weight: 600;
+      }
+      td.empty-expiring {
+        padding: 14px 12px !important;
+        color: #64748b;
+        font-style: italic;
+        text-align: center;
+        background: #f8fafc !important;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+      th {
+        text-align: left;
+        background: #0a2540;
+        color: white;
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      tr:nth-child(even) td {
+        background: #fafafa;
+      }
+      .footer {
+        margin-top: 36px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 10px;
+        color: #94a3b8;
+        text-align: center;
+      }
+      .footer-org {
+        margin-top: 6px;
+        color: #64748b;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .risk-note code {
+        font-size: 10px;
+        background: #e2e8f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-row">
+      <div>
+        <h1>NMDPRA License Compliance Report</h1>
+        <div class="subtitle">Generated on {{DATE}}</div>
+        <div class="prepared">Prepared for: NMDPRA</div>
+      </div>
+      <div class="logo-mark" title="Regulatory Intelligence System">RMLIS</div>
+    </div>
+
+    <div class="kpi-container">
+      <div class="kpi">
+        <h2>{{TOTAL}}</h2>
+        <p>Total licences</p>
+      </div>
+      <div class="kpi">
+        <h2>{{EXPIRED}}</h2>
+        <p>Expired</p>
+      </div>
+      <div class="kpi">
+        <h2>{{CRITICAL}}</h2>
+        <p>Critical (0–30d)</p>
+      </div>
+      <div class="kpi">
+        <h2>{{WARNING}}</h2>
+        <p>Warning (31–60d)</p>
+      </div>
+    </div>
+
+    <div class="risk-note">
+      <strong>Risk score (0–100)</strong> reflects proximity to licence expiry (MVP heuristic, same as
+      backend <code>computeRiskScore</code>): <strong>expired licences score 100</strong>; otherwise the
+      score is <strong>100 minus whole days until expiry</strong>, clamped to 0–100 (sooner expiry =
+      higher risk). <strong>Top risk vendors</strong> shows the highest score seen for any licence held
+      by that vendor.
+    </div>
+
+    <div class="section">
+      <h2>Expiry distribution</h2>
+      <div class="chart">
+        <img src="{{CHART_IMAGE}}" width="520" alt="Expiry chart" />
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Expiring licences (Critical &amp; Warning)</h2>
+      <p class="caption">{{EXPIRING_CAPTION}}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Licence type</th>
+            <th>Expiry date</th>
+            <th>Status</th>
+            <th>Band</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{EXPIRING_ROWS}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Top risk vendors</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Risk score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{RISK_ROWS}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div>Generated by Regulatory Intelligence System (RMLIS)</div>
+      <div class="footer-org">Nigerian Midstream and Downstream Petroleum Regulatory Authority (NMDPRA)</div>
+    </div>
+  </body>
+</html>
