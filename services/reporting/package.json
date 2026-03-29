@@ -1,10 +1,11 @@
 {
   "name": "@rmlis/reporting",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "RMLIS reporting service",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json && node -e \"require('fs').cpSync('src/templates','dist/templates',{recursive:true})\"",
@@ -23,6 +24,12 @@
       "import": "./src/mvp/index.ts",
       "require": "./src/mvp/index.ts",
       "default": "./src/mvp/index.ts"
+    },
+    "./*": {
+      "types": "./src/*.ts",
+      "import": "./src/*.ts",
+      "require": "./src/*.ts",
+      "default": "./src/*.ts"
     }
   },
   "dependencies": {
