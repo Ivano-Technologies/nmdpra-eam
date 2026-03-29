@@ -18,7 +18,12 @@
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./mvp": "./dist/mvp/index.js"
+    "./mvp": {
+      "types": "./dist/mvp/index.d.ts",
+      "import": "./dist/mvp/index.js",
+      "require": "./dist/mvp/index.js",
+      "default": "./dist/mvp/index.js"
+    }
   },
   "dependencies": {
     "@rmlis/shared": "workspace:*",

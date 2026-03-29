@@ -5,7 +5,7 @@
   "description": "RMLIS API service",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json && node -e \"require('fs').cpSync('public','dist/public',{recursive:true})\"",
+    "build": "pnpm --filter @rmlis/shared build && pnpm --filter @rmlis/reporting build && tsc -p tsconfig.json && node -e \"require('fs').cpSync('public','dist/public',{recursive:true})\"",
     "start": "node dist/server.js"
   },
   "dependencies": {

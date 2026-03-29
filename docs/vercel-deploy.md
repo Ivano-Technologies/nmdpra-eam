@@ -2,7 +2,7 @@
 
 Serverless entry: [`api/index.js`](../api/index.js) → compiled Express in [`apps/api/dist`](../apps/api/dist). [`vercel.json`](../vercel.json) uses **rewrites** (`source: "/(.*)"` → `destination: "/api"`), not legacy `routes` / `src` / `dest`.
 
-Root **`pnpm build`** runs `@rmlis/shared` → `@rmlis/reporting` → `@rmlis/api` (see [`package.json`](../package.json)). Full monorepo: **`pnpm build:all`**.
+Root **`pnpm build`** runs **`@rmlis/api` build**, which compiles **`@rmlis/shared`** and **`@rmlis/reporting`** first, then the API (see [`apps/api/package.json`](../apps/api/package.json)). Full monorepo: **`pnpm build:all`**.
 
 **Workspace resolution (Vercel):** [`apps/api/package.json`](../apps/api/package.json) lists `@rmlis/shared` and `@rmlis/reporting` as `workspace:*`. Each package exposes built **`dist/`** via `main` / `types` / [`exports`](https://nodejs.org/api/packages.html#exports). [`apps/api/tsconfig.json`](../apps/api/tsconfig.json) `paths` map to **`dist/`** (not `src/`) so TypeScript does not pull sibling packages into the API build (**TS6059** with `rootDir`). Root [`.npmrc`](../.npmrc) sets `shamefully-hoist=true`. [`vercel.json`](../vercel.json) uses `pnpm install --frozen-lockfile` then `pnpm build`.
 
@@ -38,10 +38,12 @@ Ensures indexes (e.g. `by_vendor_type_expiry`) and ingest/query logic match prod
 | Field | Value |
 |--------|--------|
 | Framework | **Other** |
-| Root | `/` |
-| Install | `pnpm install` |
+| Root | **`/`** (repo root) **or** **`apps/api`** |
+| Install | `pnpm install --frozen-lockfile` (or leave default if set in [`vercel.json`](../vercel.json)) |
 | Build | `pnpm build` |
 | Output | *(empty)* |
+
+If Root is **`apps/api`**, this repo includes [`apps/api/vercel.json`](../apps/api/vercel.json) and [`apps/api/api/index.js`](../apps/api/api/index.js) so the serverless entry and rewrites match the subdirectory layout. If Root is **`/`**, use the root [`api/index.js`](../api/index.js) + root [`vercel.json`](../vercel.json).
 
 ---
 
