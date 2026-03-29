@@ -57,6 +57,15 @@ app.get("/demo", (_req, res) => {
   res.redirect(302, "/demo.html");
 });
 
+app.get("/", (_req, res) => {
+  res.json({
+    ok: true,
+    service: "nmdpra-eam-api",
+    health: "/api/health",
+    demo: "/demo"
+  });
+});
+
 app.use("/api", apiRouter);
 
 app.use((_req, res) => {
