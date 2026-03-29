@@ -5,6 +5,7 @@ import { formatIsoDateEnGb } from "@rmlis/shared";
 import {
   getExpiringLicenses,
   getLicensesCsvRows,
+  getMvpReportData,
   getOverviewSnapshot,
   getRiskRanking
 } from "../services/licenseService";
@@ -42,6 +43,17 @@ export const getExpiringLicensesController = async (
 export const getRiskRankingController = async (_req: Request, res: Response): Promise<void> => {
   try {
     const data = await getRiskRanking();
+    res.status(200).json(data);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Convex query failed";
+    res.status(503).json({ error: message, code: "SERVICE_UNAVAILABLE" });
+  }
+};
+
+export const getMvpReport = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const data = await getMvpReportData();
+    res.setHeader("Cache-Control", "no-store");
     res.status(200).json(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Convex query failed";

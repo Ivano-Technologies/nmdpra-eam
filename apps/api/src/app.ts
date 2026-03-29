@@ -28,6 +28,14 @@ const corsOrigins = process.env.CORS_ORIGIN?.trim()
       .filter(Boolean)
   : null;
 
+const isProduction = process.env.NODE_ENV === "production";
+const corsOriginOption =
+  corsOrigins && corsOrigins.length > 0
+    ? corsOrigins
+    : isProduction
+      ? false
+      : true;
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -42,7 +50,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: corsOrigins && corsOrigins.length > 0 ? corsOrigins : true,
+    origin: corsOriginOption,
     credentials: true
   })
 );

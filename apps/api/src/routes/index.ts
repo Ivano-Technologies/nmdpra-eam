@@ -4,6 +4,7 @@ import {
   exportLicensesCsv,
   getExpiringLicensesController,
   getLicenseOverview,
+  getMvpReport,
   getRiskRankingController
 } from "../controllers/licenseController";
 import { getMvpPdf, postMvpEmail } from "../controllers/reportController";
@@ -15,6 +16,7 @@ router.get("/health", sendHealth);
 router.get("/licenses/overview", getLicenseOverview);
 router.get("/licenses/expiring", getExpiringLicensesController);
 router.get("/licenses/risk-ranking", getRiskRankingController);
+router.get("/licenses/mvp-report", getMvpReport);
 router.get("/licenses/export.csv", exportLicensesCsv);
 router.get("/reports/mvp.pdf", getMvpPdf);
 router.post("/reports/mvp/email", postMvpEmail);

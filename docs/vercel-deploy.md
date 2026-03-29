@@ -45,6 +45,19 @@ Ensures indexes (e.g. `by_vendor_type_expiry`) and ingest/query logic match prod
 
 If Root is **`apps/api`**, this repo includes [`apps/api/vercel.json`](../apps/api/vercel.json) and [`apps/api/api/index.js`](../apps/api/api/index.js) so the serverless entry and rewrites match the subdirectory layout. If Root is **`/`**, use the root [`api/index.js`](../api/index.js) + root [`vercel.json`](../vercel.json).
 
+### Web app (Next.js) — separate Vercel project
+
+| Field | Value |
+|--------|--------|
+| Framework | **Next.js** |
+| Root | **`apps/web`** |
+| Build | *(default `next build`)* |
+| Output | *(Next default)* |
+
+Set env vars per [`apps/web/.env.example`](../apps/web/.env.example). **`NEXT_PUBLIC_API_BASE_URL`** should point at your deployed API (e.g. `https://eam.techivano.com/api`).
+
+**CORS:** On the **API** Vercel project, set **`CORS_ORIGIN`** to your web app’s origin (comma-separated for Preview + Production URLs). In production, if `CORS_ORIGIN` is unset, the API does **not** send permissive CORS headers.
+
 ---
 
 ## 4) Environment variables (set, then redeploy)
@@ -60,9 +73,12 @@ RESEND_FROM_EMAIL=reports@nmdpra.app
 REPORT_EMAIL_TO=<your email>
 
 NODE_ENV=production
+
+# Required when the Next.js dashboard calls the API from the browser (comma-separated origins)
+CORS_ORIGIN=https://your-web-app.vercel.app
 ```
 
-See also [`.env.example`](../.env.example).
+See also [`.env.example`](../.env.example) and [`apps/web/.env.example`](../apps/web/.env.example).
 
 ---
 
@@ -84,6 +100,7 @@ Expect JSON including `ok`, `service`, `version`, `convexConfigured`, and **`lat
 
 ### b) Data
 
+- `GET /api/licenses/mvp-report` (dashboard JSON: summary + rows)
 - `GET /api/licenses/expiring`
 - `GET /api/licenses/risk-ranking`
 
@@ -94,6 +111,47 @@ Expect JSON including `ok`, `service`, `version`, `convexConfigured`, and **`lat
 ### d) Email
 
 `POST /api/reports/mvp/email` (body may include `{ "to": "..." }` or use `REPORT_EMAIL_TO`).
+
+---
+
+## Pre-demo verification
+
+Run through this list before a client or stakeholder demo.
+
+### Confirm Vercel settings
+
+- **API project:** Root **`/`** or **`apps/api`** (see §3 above), not the web app.
+- **Web project (Next.js):** Root Directory must be **`apps/web`**. If this is wrong in the Vercel UI, the frontend deploy will fail or serve the wrong app.
+
+### Backend (production API base, e.g. `https://eam.techivano.com`)
+
+- [ ] `GET /api/health` — JSON includes `ok: true`
+- [ ] `GET /api/licenses/mvp-report` — KPIs and rows as expected
+- [ ] `GET /api/licenses/risk-ranking` — table data
+- [ ] `GET /api/reports/mvp.pdf` — PDF downloads or opens
+
+### Frontend (web URL)
+
+- [ ] Landing page loads
+- [ ] Clerk login works
+- [ ] After login, `/dashboard` loads
+- [ ] KPI cards, expiry chart, and risk table populate (or show empty states)
+- [ ] Download PDF and Send email actions work
+
+### Deployment / CORS
+
+- [ ] API is reachable at your public domain (e.g. `https://eam.techivano.com`)
+- [ ] Web app URL is known (e.g. `https://<project>.vercel.app` or custom domain)
+- [ ] **`CORS_ORIGIN`** on the **API** project includes the **exact** web origin (scheme + host, no trailing slash); comma-separate Preview + Production if both are used
+
+### UX (before stakeholder demo)
+
+- [ ] Browser **console** has no unexpected errors on landing and dashboard
+- [ ] **Mobile** (or narrow viewport): layout readable; section jump links and cards stack sensibly
+- [ ] **Dashboard** loads in a few seconds on a typical connection (cold start may add latency on first API hit)
+- [ ] **System live** pill turns green when `/api/health` succeeds
+- [ ] **PDF** opens from the dashboard without blocking dialogs
+- [ ] **Email**: while sending, “Sending report…” appears; success or error message after completion
 
 ---
 

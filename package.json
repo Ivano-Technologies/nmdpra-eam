@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "pnpm --filter @rmlis/api build",
+    "build:web": "pnpm --filter @rmlis/web build",
     "build:all": "pnpm -r build",
+    "web:dev": "pnpm --filter @rmlis/web dev",
     "ingest": "pnpm --filter @rmlis/db ingest",
     "report:run": "pnpm --filter @rmlis/reporting report:run"
   },
