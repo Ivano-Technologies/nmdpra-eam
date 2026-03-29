@@ -2,6 +2,8 @@
 
 Next.js (App Router) frontend for RMLIS: landing page, Clerk sign-in, and authenticated dashboard backed by the Express API.
 
+Clerk runs via [`src/proxy.ts`](src/proxy.ts) (`clerkMiddleware` from `@clerk/nextjs/server`); `/dashboard` is protected. [`src/app/layout.tsx`](src/app/layout.tsx) wraps the app with `<ClerkProvider>` inside `<body>`.
+
 ## Security note (MVP)
 
 **Auth is UI-only in MVP. API endpoints are not yet secured** — anyone who can reach the API URL can call the same JSON/PDF routes the dashboard uses. Lock this down before a production launch (e.g. verify Clerk JWT on the API).

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { Radar, FileBarChart, ShieldAlert } from "lucide-react";
 
 import { FooterCta } from "@/components/landing/footer-cta";
@@ -50,11 +50,18 @@ export default async function HomePage() {
               </span>
             </Show>
             <Show when="signed-out">
-              <SignInButton mode="modal">
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-              </SignInButton>
+              <div className="flex items-center gap-2">
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="sm">
+                    Login
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button variant="outline" size="sm">
+                    Sign up
+                  </Button>
+                </SignUpButton>
+              </div>
             </Show>
           </nav>
         </div>
