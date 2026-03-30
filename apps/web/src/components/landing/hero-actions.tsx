@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,11 @@ export function HeroActions({ demoPdfHref }: HeroActionsProps) {
       <SignInButton mode="modal">
         <Button size="lg">Login</Button>
       </SignInButton>
+      <SignUpButton mode="modal">
+        <Button size="lg" variant="secondary">
+          Sign up
+        </Button>
+      </SignUpButton>
     </div>
   );
 }

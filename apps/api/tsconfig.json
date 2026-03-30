@@ -8,10 +8,10 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "@rmlis/shared": ["../../packages/shared/src/index"],
-      "@rmlis/shared/*": ["../../packages/shared/src/*"],
-      "@rmlis/reporting": ["../../services/reporting/src/index"],
-      "@rmlis/reporting/*": ["../../services/reporting/src/*"]
+      "@rmlis/shared": ["../../packages/shared/dist/index"],
+      "@rmlis/shared/*": ["../../packages/shared/dist/*"],
+      "@rmlis/reporting": ["../../services/reporting/dist/index"],
+      "@rmlis/reporting/*": ["../../services/reporting/dist/*"]
     },
     "strict": true,
     "esModuleInterop": true,
