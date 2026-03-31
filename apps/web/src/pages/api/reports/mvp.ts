@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ConvexHttpClient } from "convex/browser";
+import { makeFunctionReference } from "convex/server";
 
-import { api } from "../../../../../../convex/_generated/api";
+/** No import from repo-root `convex/_generated` — Vercel Root Directory `apps/web` omits that tree. */
+const mvpReportDataQuery = makeFunctionReference<"query">(
+  "licenses:mvpReportData"
+);
 
 type OkBody = { success: true; data: unknown };
 type ErrBody = { success: false; error: string };
@@ -33,7 +37,7 @@ export default async function handler(
 
   try {
     const convex = new ConvexHttpClient(convexUrl);
-    const data = await convex.query(api.licenses.mvpReportData, {});
+    const data = await convex.query(mvpReportDataQuery, {});
     res.setHeader("Cache-Control", "no-store, max-age=0");
     return res.status(200).json({ success: true, data });
   } catch (err) {
