@@ -9,3 +9,9 @@ dist/
 !.env.example
 .env.local
 pnpm-debug.log*
+.cursor/
+.github/
+convex/_generated/
+data/
+eslint-rules/
+eslint.config.mjs
