@@ -1,0 +1,42 @@
+import type { MvpReportResponse } from "@/types/api";
+
+export function buildComplianceReportHtml(
+  orgId: string,
+  report: MvpReportResponse
+): string {
+  const top = report.topRiskVendors?.slice(0, 5) ?? [];
+  const topList =
+    top.length > 0
+      ? `<ul>${top.map((v) => `<li>${escapeHtml(v.vendorName)} (risk ${v.riskScore})</li>`).join("")}</ul>`
+      : "<p>None highlighted.</p>";
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body style="font-family: system-ui, sans-serif; line-height: 1.5; color: #171717;">
+  <h1 style="font-size: 1.25rem;">Compliance snapshot</h1>
+  <p style="color: #525252; font-size: 0.875rem;">Organization: <strong>${escapeHtml(orgId)}</strong></p>
+  <p style="font-size: 0.875rem;">Generated: ${escapeHtml(report.generatedAt)}</p>
+  <table style="border-collapse: collapse; margin-top: 1rem; font-size: 0.875rem;">
+    <tr><td style="padding: 0.25rem 1rem 0.25rem 0;">Total licences</td><td><strong>${report.summary.total}</strong></td></tr>
+    <tr><td style="padding: 0.25rem 1rem 0.25rem 0;">Expired</td><td>${report.summary.expired}</td></tr>
+    <tr><td style="padding: 0.25rem 1rem 0.25rem 0;">Expiring in 30 days</td><td>${report.summary.expiringIn30Days}</td></tr>
+    <tr><td style="padding: 0.25rem 1rem 0.25rem 0;">Critical</td><td>${report.summary.critical}</td></tr>
+    <tr><td style="padding: 0.25rem 1rem 0.25rem 0;">Warning</td><td>${report.summary.warning}</td></tr>
+    <tr><td style="padding: 0.25rem 1rem 0.25rem 0;">Safe</td><td>${report.summary.safe}</td></tr>
+  </table>
+  <h2 style="font-size: 1rem; margin-top: 1.5rem;">Top risk vendors</h2>
+  ${topList}
+</body>
+</html>
+`.trim();
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
