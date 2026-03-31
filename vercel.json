@@ -9,7 +9,7 @@
     }
   ],
   "functions": {
-    "api/index.js": {
+    "api/[[...path]].js": {
       "maxDuration": 60
     }
   }
