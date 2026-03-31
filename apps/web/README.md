@@ -29,6 +29,6 @@ Requires Clerk env vars. `NEXT_PUBLIC_API_BASE_URL` defaults to `https://eam.tec
 
 ## Vercel
 
-Create a **separate** Vercel project with **Root Directory** `apps/web`, Framework **Next.js**. Set the same env vars as in `.env.example`. Add the web production URL to the **API** project’s `CORS_ORIGIN` so browser `fetch` succeeds.
+Create a **separate** Vercel project with **Root Directory** `apps/web`, Framework **Next.js**. Set the same env vars as in `.env.example`. If the apex domain serves Next but `/api/*` must hit the Express deployment, set **`BACKEND_API_ORIGIN`** (see `.env.example` and `next.config.ts` rewrites). Otherwise add the web production URL to the **API** project’s **`CORS_ORIGIN`** so browser `fetch` succeeds cross-origin.
 
 **Pre-demo checklist:** See [Pre-demo verification](../docs/vercel-deploy.md#pre-demo-verification) in `docs/vercel-deploy.md` (backend URLs, frontend flows, CORS, confirm `apps/web` root in Vercel).

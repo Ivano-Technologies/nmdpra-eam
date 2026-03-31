@@ -5,6 +5,8 @@ import { computeDaysToExpiry, computeExpiryBand } from "./helpers";
 export const expiringBuckets = query({
   args: {},
   handler: async (ctx) => {
+    // Full-table read for dashboard buckets; migrate to .take() / .paginate() when the dataset grows.
+    // eslint-disable-next-line local/no-collect-in-query -- bounded deployment size today; see rule message for alternatives
     const licenses = await ctx.db.query("licenses").collect();
     const expired: Array<Record<string, unknown>> = [];
     const critical: Array<Record<string, unknown>> = [];
@@ -45,6 +47,8 @@ export const expiringBuckets = query({
 export const listAllForCsv = query({
   args: {},
   handler: async (ctx) => {
+    // Export needs all rows; replace with paginated export when licenses no longer fit in memory limits.
+    // eslint-disable-next-line local/no-collect-in-query
     const licenses = await ctx.db.query("licenses").collect();
     const rows: Array<{
       vendorName: string;
@@ -79,6 +83,8 @@ export const listAllForCsv = query({
 export const mvpReportData = query({
   args: {},
   handler: async (ctx) => {
+    // Report totals require scanning all license rows; paginate or stream when scale requires it.
+    // eslint-disable-next-line local/no-collect-in-query
     const licenses = await ctx.db.query("licenses").collect();
     const generatedAt = new Date().toISOString();
     let expired = 0;
@@ -156,6 +162,8 @@ export const mvpReportData = query({
 export const riskRanking = query({
   args: {},
   handler: async (ctx) => {
+    // Ranking uses full set; switch to indexed/paginated reads if the table grows large.
+    // eslint-disable-next-line local/no-collect-in-query
     const licenses = await ctx.db.query("licenses").collect();
     const rows: Array<{
       vendorName: string;
