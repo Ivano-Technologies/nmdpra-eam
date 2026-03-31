@@ -2,11 +2,16 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { DashboardView } from "@/components/dashboard/dashboard-view";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) {
     redirect("/sign-in");
   }
-  return <DashboardView />;
+  return (
+    <DashboardLayout>
+      <DashboardView />
+    </DashboardLayout>
+  );
 }

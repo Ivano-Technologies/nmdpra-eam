@@ -1,7 +1,6 @@
 "use client";
 
-import { useAuth, useUser, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -13,7 +12,16 @@ import {
   YAxis
 } from "recharts";
 
-import { SystemStatus } from "@/components/dashboard/system-status";
+import { ClientDashboardPlaceholder } from "@/components/dashboard/client-dashboard-placeholder";
+import { ExcelUploadCard } from "@/components/dashboard/excel-upload-card";
+import { ReportSubscriptionsCard } from "@/components/dashboard/report-subscriptions-card";
+import {
+  DashboardChartSkeleton,
+  DashboardKpiSkeleton,
+  DashboardSecondaryKpiSkeleton,
+  DashboardTableSkeleton
+} from "@/components/dashboard/dashboard-skeletons";
+import { OwnerPanel } from "@/components/dashboard/owner-panel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +31,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -31,11 +40,9 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { UserRoleManager } from "@/components/dashboard/user-role-manager";
 import {
   hasPermission,
   parseUserRole,
-  roleLabel,
   type Role
 } from "@/lib/roles";
 import type {
@@ -93,7 +100,7 @@ function RiskInsightBanner({ mvp }: { mvp: MvpReportResponse }) {
     return null;
   }
   return (
-    <div className="border-border bg-muted/50 rounded-lg border px-4 py-3 text-sm">
+    <div className="border-border bg-muted/50 rounded-xl border px-4 py-3 text-sm shadow-sm transition-shadow duration-150">
       <p className="text-foreground font-medium">Risk insight</p>
       <ul className="text-muted-foreground mt-2 space-y-1.5">
         {n > 0 ? (
@@ -122,54 +129,34 @@ function RiskInsightBanner({ mvp }: { mvp: MvpReportResponse }) {
 
 function ExpiryBandLegend() {
   const items = [
-    { label: "Expired (past due)", className: "bg-zinc-500" },
-    { label: "Critical (≤30 days)", className: "bg-red-500" },
-    { label: "Warning (31–60 days)", className: "bg-amber-500" },
-    { label: "Safe (>60 days)", className: "bg-emerald-600" }
+    {
+      label: "Expired (past due)",
+      variant: "expired" as const
+    },
+    {
+      label: "Critical (≤30 days)",
+      variant: "warning" as const
+    },
+    {
+      label: "Warning (31–60 days)",
+      variant: "warning" as const
+    },
+    {
+      label: "Safe (>60 days)",
+      variant: "active" as const
+    }
   ] as const;
   return (
     <ul
-      className="text-muted-foreground flex list-none flex-wrap gap-x-4 gap-y-1 text-xs"
+      className="text-muted-foreground flex list-none flex-wrap gap-x-4 gap-y-2 text-xs"
       aria-label="Expiry band meanings"
     >
-      {items.map(({ label, className }) => (
-        <li key={label} className="inline-flex items-center gap-1.5">
-          <span
-            className={`size-2 shrink-0 rounded-full ${className}`}
-            aria-hidden
-          />
-          {label}
+      {items.map(({ label, variant }) => (
+        <li key={label} className="inline-flex items-center gap-2">
+          <StatusBadge variant={variant}>{label}</StatusBadge>
         </li>
       ))}
     </ul>
-  );
-}
-
-function DashboardSectionNav({ showOwnerLink }: { showOwnerLink?: boolean }) {
-  const links = [
-    { href: "#section-overview", label: "Overview" },
-    { href: "#section-expiry-radar", label: "Expiry radar" },
-    { href: "#section-risk-ranking", label: "Risk ranking" },
-    { href: "#section-reports", label: "Reports" },
-    ...(showOwnerLink
-      ? ([{ href: "#section-owner-users", label: "User roles" }] as const)
-      : [])
-  ];
-  return (
-    <nav
-      className="border-border flex flex-wrap gap-x-4 gap-y-1 border-b pb-3 text-sm"
-      aria-label="Jump to dashboard section"
-    >
-      {links.map(({ href, label }) => (
-        <a
-          key={href}
-          href={href}
-          className="text-primary hover:underline underline-offset-4"
-        >
-          {label}
-        </a>
-      ))}
-    </nav>
   );
 }
 
@@ -273,6 +260,11 @@ export function DashboardView() {
     return new Set(mvp.rows.map((r) => r.vendor)).size;
   }, [mvp]);
 
+  const activePct = useMemo(() => {
+    if (!mvp || mvp.summary.total <= 0) return 0;
+    return Math.round((mvp.summary.safe / mvp.summary.total) * 100);
+  }, [mvp]);
+
   const userEmail = user?.primaryEmailAddress?.emailAddress ?? "";
 
   const sendEmail = async () => {
@@ -310,292 +302,299 @@ export function DashboardView() {
 
   if (!userLoaded) {
     return (
-      <div className="mx-auto max-w-6xl space-y-6 p-4">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
-        </div>
+      <div className="space-y-6">
+        <Skeleton className="h-9 w-48 rounded-md bg-muted" />
+        <DashboardKpiSkeleton />
+        <DashboardSecondaryKpiSkeleton />
+        <DashboardChartSkeleton />
+        <DashboardTableSkeleton />
       </div>
     );
   }
 
+  if (!canAdmin) {
+    return <ClientDashboardPlaceholder />;
+  }
+
   return (
-    <div className="bg-background flex min-h-full flex-1 flex-col">
-      <header className="border-b bg-card/40">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold">RMLIS</span>
-              <span
-                className="border-border text-muted-foreground rounded-full border px-2 py-0.5 text-xs"
-                title="From Clerk publicMetadata.role"
-              >
-                {roleLabel(role)}
-              </span>
-              <SystemStatus />
-            </div>
-            <p className="text-muted-foreground text-xs leading-snug">
-              Regulatory Intelligence System (RMLIS)
-            </p>
-            <p className="text-muted-foreground text-xs">Prepared for: NMDPRA</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">Home</Link>
-            </Button>
-            <UserButton />
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-6xl flex-1 space-y-8 p-4 py-8">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground text-sm">
-            {canAdmin
-              ? "Licence intelligence overview — data from live API."
-              : "Limited dashboard — full analytics and MVP reports require an admin or owner role."}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          Licence intelligence overview — data from live API.
+        </p>
+        {mvp && !loading ? (
+          <p className="text-foreground mt-2 text-sm font-medium">
+            Last updated: {formatLastUpdated(mvp.generatedAt)}
           </p>
-          {mvp && !loading && canAdmin ? (
-            <>
-              <p className="text-foreground mt-2 text-sm font-medium">
-                Last updated: {formatLastUpdated(mvp.generatedAt)}
-              </p>
-              <div className="mt-4">
-                <DashboardSectionNav showOwnerLink={role === "owner"} />
-              </div>
-            </>
-          ) : null}
-        </div>
-
-        {error && canAdmin ? (
-          <Card className="border-destructive/50">
-            <CardHeader>
-              <CardTitle className="text-destructive">
-                Unable to load compliance data
-              </CardTitle>
-              <CardDescription>{error}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button type="button" onClick={() => void loadAdminData()}>
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {!canAdmin && !loading ? (
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Client access</CardTitle>
-              <CardDescription>
-                You can review organisation-level compliance when that data is
-                wired to your account. System-wide vendor analytics, risk scoring,
-                PDF/email reports, and data ingestion require an{" "}
-                <span className="text-foreground font-medium">admin</span> or{" "}
-                <span className="text-foreground font-medium">owner</span> role.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        ) : null}
-
-        {canAdmin && loading ? (
-          <div className="space-y-3">
-            <p className="text-muted-foreground text-sm">
-              Fetching latest compliance data…
-            </p>
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-28" />
-              ))}
-              <Skeleton className="h-72 md:col-span-3 lg:col-span-6" />
-              <Skeleton className="h-64 md:col-span-3 lg:col-span-6" />
-            </div>
-          </div>
-        ) : canAdmin && mvp ? (
-          <>
-            <section
-              id="section-overview"
-              className="scroll-mt-28 space-y-4"
-            >
-              <RiskInsightBanner mvp={mvp} />
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                <KpiCard label="Total licences" value={mvp.summary.total} />
-                <KpiCard
-                  label="Expired (past due)"
-                  value={mvp.summary.expired}
-                />
-                <KpiCard
-                  label="Critical (≤30 days)"
-                  value={mvp.summary.critical}
-                />
-                <KpiCard
-                  label="Warning (31–60 days)"
-                  value={mvp.summary.warning}
-                />
-                <KpiCard label="Safe (>60 days)" value={mvp.summary.safe} />
-                <KpiCard
-                  label="Licences expiring in next 30 days"
-                  value={mvp.summary.expiringIn30Days}
-                />
-              </div>
-
-              <p className="text-muted-foreground text-sm">
-                <span className="text-foreground font-medium">Coverage: </span>
-                {mvp.summary.total} licence{mvp.summary.total === 1 ? "" : "s"}{" "}
-                across {vendorCount} vendor{vendorCount === 1 ? "" : "s"}
-              </p>
-            </section>
-
-            <Card id="section-expiry-radar" className="scroll-mt-28">
-              <CardHeader className="space-y-3">
-                <div>
-                  <CardTitle>Expiry radar</CardTitle>
-                  <CardDescription>
-                    Licence rows by expiry band (from MVP report dataset).
-                  </CardDescription>
-                </div>
-                <ExpiryBandLegend />
-              </CardHeader>
-              <CardContent className="h-72">
-                {chartIsEmpty ? (
-                  <p className="text-muted-foreground flex h-full items-center justify-center text-center text-sm">
-                    No licence rows in this report for the expiry radar.
-                  </p>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={chartData}
-                      margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        className="stroke-muted"
-                      />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ borderRadius: 8 }}
-                        formatter={(value) => [Number(value ?? 0), "Licences"]}
-                      />
-                      <Bar
-                        dataKey="value"
-                        fill="#64748b"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card id="section-risk-ranking" className="scroll-mt-28">
-              <CardHeader>
-                <CardTitle>Risk ranking</CardTitle>
-                <CardDescription>
-                  Vendors sorted by risk score (highest first).
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="overflow-x-auto">
-                {risk && risk.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Vendor</TableHead>
-                        <TableHead className="text-right">Risk score</TableHead>
-                        <TableHead>Expiry</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {risk.slice(0, 50).map((row, i) => (
-                        <TableRow
-                          key={`${row.vendorName}-${row.expiryDate}-${i}`}
-                        >
-                          <TableCell className="font-medium">
-                            {row.vendorName}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {row.riskScore}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {row.expiryDateEnGb}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <p className="text-muted-foreground text-sm">
-                    No high-risk vendors detected in this dataset.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card id="section-reports" className="scroll-mt-28">
-              <CardHeader>
-                <CardTitle>Reports</CardTitle>
-                <CardDescription>
-                  Download PDF or email the current MVP report.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                <div className="flex flex-wrap gap-3">
-                  <Button size="lg" variant="outline" asChild>
-                    <a href={pdfHref} target="_blank" rel="noreferrer">
-                      Download PDF
-                    </a>
-                  </Button>
-                  <Button
-                    size="lg"
-                    type="button"
-                    disabled={emailStatus === "sending" || !userEmail}
-                    onClick={() => void sendEmail()}
-                  >
-                    {emailStatus === "sending" ? "Sending…" : "Send email"}
-                  </Button>
-                </div>
-                {emailStatus === "sending" ? (
-                  <p className="text-muted-foreground text-sm">
-                    Sending report…
-                  </p>
-                ) : null}
-              </CardContent>
-              {emailMessage ? (
-                <CardContent className="pt-0">
-                  <p
-                    className={
-                      emailStatus === "ok"
-                        ? "text-sm text-emerald-600 dark:text-emerald-400"
-                        : "text-destructive text-sm"
-                    }
-                  >
-                    {emailMessage}
-                  </p>
-                </CardContent>
-              ) : null}
-            </Card>
-
-            {role === "owner" ? <UserRoleManager /> : null}
-          </>
         ) : null}
       </div>
+
+      {error ? (
+        <Card className="border-destructive/40 transition-shadow duration-150">
+          <CardHeader>
+            <CardTitle className="text-destructive text-xl font-medium">
+              Failed to load — retry
+            </CardTitle>
+            <CardDescription>{error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button type="button" onClick={() => void loadAdminData()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {loading ? (
+        <div className="space-y-6">
+          <p className="text-muted-foreground text-sm">Loading dashboard…</p>
+          <DashboardKpiSkeleton />
+          <DashboardSecondaryKpiSkeleton />
+          <DashboardChartSkeleton />
+          <DashboardTableSkeleton />
+        </div>
+      ) : (
+        <>
+          <ExcelUploadCard />
+          {mvp ? (
+            <>
+              <section
+                id="section-overview"
+                className="scroll-mt-28 space-y-6"
+              >
+            <RiskInsightBanner mvp={mvp} />
+
+            {/* Primary KPIs: total, expiring soon (30d), expired, active % */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <KpiCard
+                label="Total licences"
+                value={mvp.summary.total}
+                hint="All licence rows in scope"
+              />
+              <KpiCard
+                label="Expiring soon"
+                value={mvp.summary.expiringIn30Days}
+                hint="Due within 30 days (from MVP summary)"
+              />
+              <KpiCard
+                label="Expired"
+                value={mvp.summary.expired}
+                hint="Past due"
+              />
+              <KpiCard
+                label="Active %"
+                value={`${activePct}%`}
+                hint="Share in “safe” band"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <KpiCard
+                label="Critical (≤30 days)"
+                value={mvp.summary.critical}
+                hint="Secondary"
+              />
+              <KpiCard
+                label="Warning (31–60 days)"
+                value={mvp.summary.warning}
+                hint="Secondary"
+              />
+              <KpiCard
+                label="Safe (&gt;60 days)"
+                value={mvp.summary.safe}
+                hint="Secondary"
+              />
+              <KpiCard
+                label="Vendors"
+                value={vendorCount}
+                hint="Distinct vendors in report"
+              />
+            </div>
+
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <span className="text-foreground font-medium">Coverage: </span>
+              {mvp.summary.total} licence{mvp.summary.total === 1 ? "" : "s"}{" "}
+              across {vendorCount} vendor{vendorCount === 1 ? "" : "s"}
+            </p>
+          </section>
+
+          <Card
+            id="section-expiry-radar"
+            className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+          >
+            <CardHeader className="space-y-3">
+              <div>
+                <CardTitle className="text-xl font-medium">Expiry radar</CardTitle>
+                <CardDescription>
+                  Licence rows by expiry band (from MVP report dataset).
+                </CardDescription>
+              </div>
+              <ExpiryBandLegend />
+            </CardHeader>
+            <CardContent className="h-72">
+              {chartIsEmpty ? (
+                <p className="text-muted-foreground flex h-full items-center justify-center text-center text-sm">
+                  No data available for this chart.
+                </p>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-muted"
+                    />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 8 }}
+                      formatter={(value) => [Number(value ?? 0), "Licences"]}
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="#64748b"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card
+            id="section-risk-ranking"
+            className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+          >
+            <CardHeader>
+              <CardTitle className="text-xl font-medium">Risk ranking</CardTitle>
+              <CardDescription>
+                Vendors sorted by risk score (highest first).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              {risk && risk.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Vendor</TableHead>
+                      <TableHead className="text-right">Risk score</TableHead>
+                      <TableHead>Expiry</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className="[&_tr:nth-child(even)]:bg-muted/40">
+                    {risk.slice(0, 50).map((row, i) => (
+                      <TableRow
+                        key={`${row.vendorName}-${row.expiryDate}-${i}`}
+                        className="transition-colors duration-150"
+                      >
+                        <TableCell className="font-medium">
+                          {row.vendorName}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {row.riskScore}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {row.expiryDateEnGb}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No data available.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card
+            id="section-reports"
+            className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+          >
+            <CardHeader>
+              <CardTitle className="text-xl font-medium">Reports</CardTitle>
+              <CardDescription>
+                Download PDF or email the current MVP report.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-3">
+                <Button size="lg" variant="outline" asChild>
+                  <a href={pdfHref} target="_blank" rel="noreferrer">
+                    Download PDF
+                  </a>
+                </Button>
+                <Button
+                  size="lg"
+                  type="button"
+                  disabled={emailStatus === "sending" || !userEmail}
+                  onClick={() => void sendEmail()}
+                >
+                  {emailStatus === "sending" ? "Sending…" : "Send email"}
+                </Button>
+              </div>
+              {emailStatus === "sending" ? (
+                <p className="text-muted-foreground text-sm">
+                  Sending report…
+                </p>
+              ) : null}
+            </CardContent>
+            {emailMessage ? (
+              <CardContent className="pt-0">
+                <p
+                  className={
+                    emailStatus === "ok"
+                      ? "text-sm text-emerald-600 dark:text-emerald-400"
+                      : "text-destructive text-sm"
+                  }
+                >
+                  {emailMessage}
+                </p>
+              </CardContent>
+            ) : null}
+          </Card>
+
+          {role === "owner" ? (
+            <>
+              <OwnerPanel />
+              <ReportSubscriptionsCard />
+            </>
+          ) : null}
+            </>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }
 
-function KpiCard({ label, value }: { label: string; value: number }) {
+function KpiCard({
+  label,
+  value,
+  hint
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+}) {
   return (
-    <Card>
+    <Card className="transition-shadow duration-150 hover:shadow-md">
       <CardHeader className="pb-2">
         <CardDescription className="text-xs leading-snug">{label}</CardDescription>
         <CardTitle className="text-3xl tabular-nums">{value}</CardTitle>
-        <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
-          Current snapshot
-        </p>
+        {hint ? (
+          <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
+            {hint}
+          </p>
+        ) : (
+          <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
+            Current snapshot
+          </p>
+        )}
       </CardHeader>
     </Card>
   );

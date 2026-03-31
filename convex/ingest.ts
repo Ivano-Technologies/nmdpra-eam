@@ -6,6 +6,8 @@ import { computeDaysToExpiry, computeRiskScore, normalizeVendorKey } from "./hel
 export const importLicenses = mutation({
   args: {
     secret: v.string(),
+    /** When set, new/updated vendors are tagged for this tenant. */
+    defaultOrgId: v.optional(v.string()),
     rows: v.array(
       v.object({
         vendorName: v.string(),
@@ -36,13 +38,15 @@ export const importLicenses = mutation({
         const vendorId = await ctx.db.insert("vendors", {
           name: row.vendorName,
           category: row.category,
-          normalizedName
+          normalizedName,
+          ...(args.defaultOrgId ? { orgId: args.defaultOrgId } : {})
         });
         vendor = await ctx.db.get(vendorId);
       } else {
         await ctx.db.patch(vendor._id, {
           name: row.vendorName,
-          category: row.category
+          category: row.category,
+          ...(args.defaultOrgId ? { orgId: args.defaultOrgId } : {})
         });
       }
 

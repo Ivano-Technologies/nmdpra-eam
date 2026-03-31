@@ -1,6 +1,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+import { appendAuditLog } from "@/lib/audit-server";
 import type { Role } from "@/lib/roles";
 import { parseUserRole } from "@/lib/roles";
 
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
   }
 
   const target = await client.users.getUser(targetUserId);
+  const prevRole = parseUserRole(target.publicMetadata);
   const prev =
     target.publicMetadata && typeof target.publicMetadata === "object"
       ? { ...target.publicMetadata }
@@ -63,6 +65,13 @@ export async function POST(req: Request) {
 
   await client.users.updateUserMetadata(targetUserId, {
     publicMetadata: { ...prev, role: newRole }
+  });
+
+  await appendAuditLog({
+    action: "role.change",
+    actorUserId: userId,
+    targetUserId,
+    metadata: { prevRole, newRole }
   });
 
   return NextResponse.json({ success: true });

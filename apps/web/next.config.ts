@@ -13,6 +13,7 @@ const backendApiOrigin =
   process.env.BACKEND_API_ORIGIN?.trim().replace(/\/$/, "") ?? "";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@rmlis/shared"],
   env: {
     NEXT_PUBLIC_API_BASE_URL:
       process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://eam.techivano.com/api"

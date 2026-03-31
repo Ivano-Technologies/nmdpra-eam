@@ -31,9 +31,14 @@ const repoRoot = monorepoRoot(process.cwd());
 dotenv.config({ path: path.join(repoRoot, ".env.local") });
 dotenv.config({ path: path.join(repoRoot, ".env") });
 
-const parseArgs = (argv: string[]): { jsonPath?: string; filePath?: string } => {
+const parseArgs = (argv: string[]): {
+  jsonPath?: string;
+  filePath?: string;
+  orgId?: string;
+} => {
   let jsonPath: string | undefined;
   let filePath: string | undefined;
+  let orgId: string | undefined;
   for (const arg of argv) {
     if (arg.startsWith("--json=")) {
       jsonPath = arg.slice("--json=".length).replace(/^["']|["']$/g, "");
@@ -41,8 +46,11 @@ const parseArgs = (argv: string[]): { jsonPath?: string; filePath?: string } => 
     if (arg.startsWith("--file=")) {
       filePath = arg.slice("--file=".length).replace(/^["']|["']$/g, "");
     }
+    if (arg.startsWith("--org-id=")) {
+      orgId = arg.slice("--org-id=".length).trim();
+    }
   }
-  return { jsonPath, filePath };
+  return { jsonPath, filePath, orgId };
 };
 
 /** Short preview of row keys/values for ingest debugging (avoid huge console output). */
@@ -100,7 +108,7 @@ const loadRowsFromExcel = (
 };
 
 const run = async (): Promise<void> => {
-  const { jsonPath, filePath } = parseArgs(process.argv.slice(2));
+  const { jsonPath, filePath, orgId } = parseArgs(process.argv.slice(2));
 
   if ((!jsonPath && !filePath) || (jsonPath && filePath)) {
     console.error("Usage: pnpm ingest -- --json=path/to/data.json");
@@ -167,7 +175,8 @@ const run = async (): Promise<void> => {
   const client = new ConvexHttpClient(url);
   const result = await client.mutation(importLicenses, {
     secret,
-    rows
+    rows,
+    ...(orgId ? { defaultOrgId: orgId } : {})
   });
 
   console.log(`Imported ${result.imported} of ${result.total} license row(s).`);

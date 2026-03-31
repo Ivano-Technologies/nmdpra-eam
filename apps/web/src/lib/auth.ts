@@ -8,16 +8,9 @@ import {
 
 import type { Role } from "@/lib/roles";
 import { hasPermission, parseUserRole } from "@/lib/roles";
+import { AuthRoleError } from "@/lib/auth-role-error";
 
-export class AuthRoleError extends Error {
-  constructor(
-    message: string,
-    public readonly status: 401 | 403
-  ) {
-    super(message);
-    this.name = "AuthRoleError";
-  }
-}
+export { AuthRoleError };
 
 /**
  * App Router: current user's role from Clerk (publicMetadata.role), default client.

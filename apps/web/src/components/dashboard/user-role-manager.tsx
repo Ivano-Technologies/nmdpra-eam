@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,24 +12,102 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import type { Role } from "@/lib/roles";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table";
+import { type Role } from "@/lib/roles";
+
+const PAGE_SIZE = 20;
+
+type ListedUser = {
+  id: string;
+  email: string | null;
+  role: Role;
+  lastSignInAt: string | null;
+};
+
+type UsersApiResponse = {
+  users: ListedUser[];
+  totalCount: number;
+  limit: number;
+  offset: number;
+};
+
+function formatLastLogin(iso: string | null): string {
+  if (!iso) {
+    return "—";
+  }
+  return new Date(iso).toLocaleString("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+}
 
 export function UserRoleManager() {
   const { getToken } = useAuth();
-  const [targetUserId, setTargetUserId] = useState("");
-  const [newRole, setNewRole] = useState<Role>("client");
-  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
-  const [message, setMessage] = useState<string | null>(null);
+  const [rows, setRows] = useState<ListedUser[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
+  /** pending role per user id before Save */
+  const [draftRoles, setDraftRoles] = useState<Record<string, Role>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [rowMessage, setRowMessage] = useState<Record<string, string>>({});
 
-  const assign = async () => {
-    setMessage(null);
-    const id = targetUserId.trim();
-    if (!id) {
-      setStatus("err");
-      setMessage("Enter the target user’s Clerk ID.");
+  const load = useCallback(async () => {
+    setLoading(true);
+    setListError(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(
+        `/api/users?limit=${PAGE_SIZE}&offset=${offset}`,
+        {
+          cache: "no-store",
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+      const body = (await res.json().catch(() => ({}))) as UsersApiResponse & {
+        error?: string;
+      };
+      if (!res.ok) {
+        throw new Error(body.error ?? `Failed to load users (${res.status})`);
+      }
+      setRows(body.users ?? []);
+      setTotalCount(body.totalCount ?? 0);
+      setDraftRoles((prev) => {
+        const next = { ...prev };
+        for (const u of body.users ?? []) {
+          if (next[u.id] === undefined) {
+            next[u.id] = u.role;
+          }
+        }
+        return next;
+      });
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : "Failed to load users");
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken, offset]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const saveRole = async (targetUserId: string) => {
+    const newRole = draftRoles[targetUserId];
+    if (!newRole) {
       return;
     }
-    setStatus("loading");
+    setSavingId(targetUserId);
+    setRowMessage((m) => ({ ...m, [targetUserId]: "" }));
     try {
       const token = await getToken();
       const res = await fetch("/api/users/set-role", {
@@ -37,73 +116,146 @@ export function UserRoleManager() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({ targetUserId: id, newRole })
+        body: JSON.stringify({ targetUserId, newRole })
       });
-      const body = (await res.json().catch(() => ({}))) as {
-        error?: string;
-      };
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        throw new Error(body.error ?? `Request failed (${res.status})`);
+        throw new Error(body.error ?? `Save failed (${res.status})`);
       }
-      setStatus("ok");
-      setMessage("Role updated.");
-      setTargetUserId("");
+      toast.success("Role updated");
+      setRowMessage((m) => ({
+        ...m,
+        [targetUserId]: ""
+      }));
+      await load();
     } catch (e) {
-      setStatus("err");
-      setMessage(e instanceof Error ? e.message : "Update failed");
+      const msg = e instanceof Error ? e.message : "Error";
+      toast.error(msg);
+      setRowMessage((m) => ({
+        ...m,
+        [targetUserId]: msg
+      }));
+    } finally {
+      setSavingId(null);
     }
   };
 
+  const hasPrev = offset > 0;
+  const hasNext = offset + PAGE_SIZE < totalCount;
+
   return (
-    <Card id="section-owner-users" className="scroll-mt-28">
+    <Card
+      id="section-owner-users"
+      className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+    >
       <CardHeader>
-        <CardTitle>User role management</CardTitle>
+        <CardTitle className="text-xl font-medium">User role management</CardTitle>
         <CardDescription>
-          Owner-only: set <span className="text-foreground font-medium">publicMetadata.role</span>{" "}
-          for another user. Copy the user ID from Clerk Dashboard → Users.
+          Owner-only: users from Clerk with role from{" "}
+          <span className="text-foreground font-medium">publicMetadata.role</span>.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex max-w-lg flex-col gap-3">
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-muted-foreground">Target user ID</span>
-          <input
-            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            placeholder="user_..."
-            value={targetUserId}
-            onChange={(e) => setTargetUserId(e.target.value)}
-            autoComplete="off"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-muted-foreground">New role</span>
-          <select
-            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            value={newRole}
-            onChange={(e) => setNewRole(e.target.value as Role)}
-          >
-            <option value="client">Client</option>
-            <option value="admin">Admin</option>
-            <option value="owner">Owner</option>
-          </select>
-        </label>
-        <Button
-          type="button"
-          disabled={status === "loading"}
-          onClick={() => void assign()}
-        >
-          {status === "loading" ? "Saving…" : "Assign role"}
-        </Button>
-        {message ? (
-          <p
-            className={
-              status === "ok"
-                ? "text-sm text-emerald-600 dark:text-emerald-400"
-                : "text-destructive text-sm"
-            }
-          >
-            {message}
-          </p>
+      <CardContent className="space-y-4">
+        {listError ? (
+          <p className="text-destructive text-sm">{listError}</p>
         ) : null}
+        {loading ? (
+          <p className="text-muted-foreground text-sm">Loading users…</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Last login</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="[&_tr:nth-child(even)]:bg-muted/40">
+                  {rows.map((u) => (
+                    <TableRow
+                      key={u.id}
+                      className="transition-colors duration-150"
+                    >
+                      <TableCell className="font-medium">
+                        {u.email ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <select
+                          className="border-input bg-background h-9 w-full min-w-[7rem] rounded-md border border-neutral-200 px-2 text-sm dark:border-neutral-700"
+                          aria-label={`Role for ${u.email ?? u.id}`}
+                          value={draftRoles[u.id] ?? u.role}
+                          onChange={(e) =>
+                            setDraftRoles((d) => ({
+                              ...d,
+                              [u.id]: e.target.value as Role
+                            }))
+                          }
+                        >
+                          <option value="client">Client</option>
+                          <option value="admin">Admin</option>
+                          <option value="owner">Owner</option>
+                        </select>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatLastLogin(u.lastSignInAt)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-col items-end gap-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={
+                              savingId === u.id ||
+                              (draftRoles[u.id] ?? u.role) === u.role
+                            }
+                            onClick={() => void saveRole(u.id)}
+                          >
+                            {savingId === u.id ? "Saving…" : "Save"}
+                          </Button>
+                          {rowMessage[u.id] ? (
+                            <span className="text-muted-foreground max-w-[12rem] break-words text-xs">
+                              {rowMessage[u.id]}
+                            </span>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span>
+                {totalCount === 0
+                  ? "No users"
+                  : `Showing ${offset + 1}–${Math.min(offset + rows.length, offset + PAGE_SIZE)} of ${totalCount}`}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasPrev || loading}
+                  onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasNext || loading}
+                  onClick={() => setOffset((o) => o + PAGE_SIZE)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
