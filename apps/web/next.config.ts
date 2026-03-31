@@ -5,9 +5,9 @@ import type { NextConfig } from "next";
 /**
  * When the marketing/dashboard domain points at this Next app but the Express API
  * lives on another Vercel deployment, set BACKEND_API_ORIGIN to that deployment
- * origin (no trailing slash). Browser calls to https://your-domain/api/* are then
- * rewritten server-side to the API. Omit to disable rewrites (direct fetch to
- * NEXT_PUBLIC_API_BASE_URL, often with CORS on the API).
+ * origin (no trailing slash). Only `/api/licenses/*` and `/api/reports/*` are
+ * proxied so App Router handlers (e.g. `/api/health`) are not swallowed by the
+ * rewrite on Vercel.
  */
 const backendApiOrigin =
   process.env.BACKEND_API_ORIGIN?.trim().replace(/\/$/, "") ?? "";
@@ -26,8 +26,12 @@ const nextConfig: NextConfig = {
     }
     return [
       {
-        source: "/api/:path*",
-        destination: `${backendApiOrigin}/api/:path*`
+        source: "/api/licenses/:path*",
+        destination: `${backendApiOrigin}/api/licenses/:path*`
+      },
+      {
+        source: "/api/reports/:path*",
+        destination: `${backendApiOrigin}/api/reports/:path*`
       }
     ];
   }
