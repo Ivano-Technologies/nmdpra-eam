@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser, UserButton } from "@clerk/nextjs";
+import { useAuth, useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -31,7 +31,6 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { getPublicApiBase } from "@/lib/api";
 import type {
   ApiErrorBody,
   MvpReportResponse,
@@ -165,6 +164,7 @@ function DashboardSectionNav() {
 }
 
 export function DashboardView() {
+  const { getToken } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const [mvp, setMvp] = useState<MvpReportResponse | null>(null);
   const [risk, setRisk] = useState<RiskRankingRow[] | null>(null);
@@ -179,10 +179,21 @@ export function DashboardView() {
     setLoading(true);
     setError(null);
     try {
-      const base = getPublicApiBase();
+      const token = await getToken();
+      const authHeaders: HeadersInit =
+        token !== null && token !== ""
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+      // Same-origin `/api/*`; Bearer lets Pages API `getAuth(req)` resolve the session reliably.
       const [mvpRes, riskRes] = await Promise.all([
-        fetch(`${base}/reports/mvp`, { cache: "no-store" }),
-        fetch(`${base}/licenses/risk-ranking`, { cache: "no-store" })
+        fetch("/api/reports/mvp", {
+          cache: "no-store",
+          headers: authHeaders
+        }),
+        fetch("/api/licenses/risk-ranking", {
+          cache: "no-store",
+          headers: authHeaders
+        })
       ]);
       const mvpJson = (await mvpRes.json().catch(() => ({}))) as
         | { success: true; data: MvpReportResponse }
@@ -219,7 +230,7 @@ export function DashboardView() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getToken]);
 
   useEffect(() => {
     void load();
@@ -253,10 +264,13 @@ export function DashboardView() {
     }
     setEmailStatus("sending");
     try {
-      const base = getPublicApiBase();
-      const res = await fetch(`${base}/reports/mvp/email`, {
+      const token = await getToken();
+      const res = await fetch("/api/reports/mvp/email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ to })
       });
       if (!res.ok) {
@@ -271,7 +285,7 @@ export function DashboardView() {
     }
   };
 
-  const pdfHref = `${getPublicApiBase()}/reports/mvp.pdf`;
+  const pdfHref = "/api/reports/mvp.pdf";
 
   if (!userLoaded) {
     return (

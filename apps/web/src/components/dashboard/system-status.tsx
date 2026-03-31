@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { getPublicApiBase } from "@/lib/api";
-
 type HealthBody = {
+  status?: string;
   ok?: boolean;
   latencyMs?: number;
 };
@@ -16,16 +15,16 @@ export function SystemStatus() {
     let cancelled = false;
     const run = async () => {
       try {
-        const res = await fetch(`${getPublicApiBase()}/health`, {
-          cache: "no-store"
-        });
+        const res = await fetch("/api/health", { cache: "no-store" });
         if (!res.ok) {
           if (!cancelled) setState("down");
           return;
         }
         const body = (await res.json()) as HealthBody;
         if (!cancelled) {
-          setState(body.ok === true ? "live" : "down");
+          const live =
+            body.status === "ok" || body.ok === true;
+          setState(live ? "live" : "down");
         }
       } catch {
         if (!cancelled) setState("down");

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getAuth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
 
@@ -24,6 +25,11 @@ export default async function handler(
       success: false,
       error: "Method not allowed"
     });
+  }
+
+  const { userId } = getAuth(req);
+  if (!userId) {
+    return res.status(401).json({ success: false, error: "Unauthorized" });
   }
 
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();

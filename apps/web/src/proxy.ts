@@ -10,7 +10,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Exclude public JSON probes and MVP JSON from Clerk (unsigned curl / server fetch).
-    "/((?!api/health|api/reports/mvp|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)"
+    // Exclude health only; /api/reports/mvp uses Clerk (getAuth) — keep middleware in the chain.
+    "/((?!api/health|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)"
   ]
 };
