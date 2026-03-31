@@ -2,3 +2,12 @@ packages:
   - "apps/*"
   - "services/*"
   - "packages/*"
+
+# Allow lifecycle scripts for these deps (pnpm v10 blocks others by default).
+# See https://pnpm.io/settings#onlybuiltdependencies
+onlyBuiltDependencies:
+  - "@clerk/shared"
+  - esbuild
+  - msw
+  - sharp
+  - unrs-resolver
