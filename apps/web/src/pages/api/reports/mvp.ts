@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getAuth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
+
+import { AuthRoleError, requireRolePages } from "@/lib/auth";
 
 /** No import from repo-root `convex/_generated` — Vercel Root Directory `apps/web` omits that tree. */
 const mvpReportDataQuery = makeFunctionReference<"query">(
@@ -27,9 +28,16 @@ export default async function handler(
     });
   }
 
-  const { userId } = getAuth(req);
-  if (!userId) {
-    return res.status(401).json({ success: false, error: "Unauthorized" });
+  try {
+    await requireRolePages(req, "admin");
+  } catch (e) {
+    if (e instanceof AuthRoleError) {
+      return res.status(e.status).json({
+        success: false,
+        error: e.message
+      });
+    }
+    throw e;
   }
 
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();

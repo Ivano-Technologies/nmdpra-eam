@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { parseUserRole, type UserRole } from "@/lib/roles";
 import type {
   ApiErrorBody,
   MvpReportResponse,
@@ -166,6 +167,7 @@ function DashboardSectionNav() {
 export function DashboardView() {
   const { getToken } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
+  const role: UserRole = parseUserRole(user?.publicMetadata);
   const [mvp, setMvp] = useState<MvpReportResponse | null>(null);
   const [risk, setRisk] = useState<RiskRankingRow[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -175,7 +177,7 @@ export function DashboardView() {
   >("idle");
   const [emailMessage, setEmailMessage] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const loadAdminData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -184,7 +186,6 @@ export function DashboardView() {
         token !== null && token !== ""
           ? { Authorization: `Bearer ${token}` }
           : {};
-      // Same-origin `/api/*`; Bearer lets Pages API `getAuth(req)` resolve the session reliably.
       const [mvpRes, riskRes] = await Promise.all([
         fetch("/api/reports/mvp", {
           cache: "no-store",
@@ -233,8 +234,18 @@ export function DashboardView() {
   }, [getToken]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!userLoaded) {
+      return;
+    }
+    if (role !== "admin") {
+      setMvp(null);
+      setRisk(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+    void loadAdminData();
+  }, [userLoaded, role, loadAdminData]);
 
   const chartData = useMemo(
     () => (mvp ? aggregateExpiryCounts(mvp.rows) : []),
@@ -307,6 +318,12 @@ export function DashboardView() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-semibold">RMLIS</span>
+              <span
+                className="border-border text-muted-foreground rounded-full border px-2 py-0.5 text-xs"
+                title="From Clerk publicMetadata.role"
+              >
+                {role === "admin" ? "Admin" : "Client"}
+              </span>
               <SystemStatus />
             </div>
             <p className="text-muted-foreground text-xs leading-snug">
@@ -327,9 +344,11 @@ export function DashboardView() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
-            Licence intelligence overview — data from live API.
+            {role === "admin"
+              ? "Licence intelligence overview — data from live API."
+              : "Limited dashboard — full analytics and MVP reports require an admin role."}
           </p>
-          {mvp && !loading ? (
+          {mvp && !loading && role === "admin" ? (
             <>
               <p className="text-foreground mt-2 text-sm font-medium">
                 Last updated: {formatLastUpdated(mvp.generatedAt)}
@@ -341,7 +360,7 @@ export function DashboardView() {
           ) : null}
         </div>
 
-        {error ? (
+        {error && role === "admin" ? (
           <Card className="border-destructive/50">
             <CardHeader>
               <CardTitle className="text-destructive">
@@ -350,14 +369,29 @@ export function DashboardView() {
               <CardDescription>{error}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button type="button" onClick={() => void load()}>
+              <Button type="button" onClick={() => void loadAdminData()}>
                 Retry
               </Button>
             </CardContent>
           </Card>
         ) : null}
 
-        {loading ? (
+        {role === "client" && !loading ? (
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle>Client access</CardTitle>
+              <CardDescription>
+                You can review organisation-level compliance when that data is
+                wired to your account. System-wide vendor analytics, risk scoring,
+                PDF/email reports, and data ingestion are limited to{" "}
+                <span className="text-foreground font-medium">admin</span>{" "}
+                users.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ) : null}
+
+        {role === "admin" && loading ? (
           <div className="space-y-3">
             <p className="text-muted-foreground text-sm">
               Fetching latest compliance data…
@@ -370,7 +404,7 @@ export function DashboardView() {
               <Skeleton className="h-64 md:col-span-3 lg:col-span-6" />
             </div>
           </div>
-        ) : mvp ? (
+        ) : role === "admin" && mvp ? (
           <>
             <section
               id="section-overview"
