@@ -16,7 +16,9 @@ export function useDashboardHash(): string {
   }, []);
 
   useEffect(() => {
-    read();
+    queueMicrotask(() => {
+      read();
+    });
     window.addEventListener("hashchange", read);
     return () => window.removeEventListener("hashchange", read);
   }, [read]);

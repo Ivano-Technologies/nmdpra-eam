@@ -1,5 +1,3 @@
-import path from "path";
-
 import type { NextConfig } from "next";
 
 /**
@@ -14,12 +12,12 @@ const backendApiOrigin =
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@rmlis/shared"],
+  // Do not set `turbopack.root` to the monorepo root: resolution looks for
+  // `node_modules/@rmlis/shared` from that root, but pnpm links the workspace
+  // package under `apps/web/node_modules`, which breaks Vercel builds.
   env: {
     NEXT_PUBLIC_API_BASE_URL:
       process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://eam.techivano.com/api"
-  },
-  turbopack: {
-    root: path.resolve(process.cwd(), "../..")
   },
   async rewrites() {
     if (!backendApiOrigin) {
