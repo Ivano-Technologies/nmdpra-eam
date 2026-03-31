@@ -181,18 +181,36 @@ export function DashboardView() {
     try {
       const base = getPublicApiBase();
       const [mvpRes, riskRes] = await Promise.all([
-        fetch(`${base}/licenses/mvp-report`, { cache: "no-store" }),
+        fetch(`${base}/reports/mvp`, { cache: "no-store" }),
         fetch(`${base}/licenses/risk-ranking`, { cache: "no-store" })
       ]);
+      const mvpJson = (await mvpRes.json().catch(() => ({}))) as
+        | { success: true; data: MvpReportResponse }
+        | { success: false; error?: string }
+        | ApiErrorBody;
       if (!mvpRes.ok) {
-        const body = (await mvpRes.json().catch(() => ({}))) as ApiErrorBody;
-        throw new Error(body.error ?? `MVP report failed (${mvpRes.status})`);
+        const err =
+          "error" in mvpJson && typeof mvpJson.error === "string"
+            ? mvpJson.error
+            : undefined;
+        throw new Error(err ?? `MVP report failed (${mvpRes.status})`);
       }
+      if (
+        !("success" in mvpJson) ||
+        mvpJson.success !== true ||
+        !mvpJson.data
+      ) {
+        const err =
+          "error" in mvpJson && typeof mvpJson.error === "string"
+            ? mvpJson.error
+            : "MVP report returned an invalid response";
+        throw new Error(err);
+      }
+      setMvp(mvpJson.data);
       if (!riskRes.ok) {
         const body = (await riskRes.json().catch(() => ({}))) as ApiErrorBody;
         throw new Error(body.error ?? `Risk ranking failed (${riskRes.status})`);
       }
-      setMvp((await mvpRes.json()) as MvpReportResponse);
       setRisk((await riskRes.json()) as RiskRankingRow[]);
     } catch (e) {
       setMvp(null);
