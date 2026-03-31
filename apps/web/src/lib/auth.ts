@@ -6,8 +6,8 @@ import {
   getAuth
 } from "@clerk/nextjs/server";
 
-import type { UserRole } from "@/lib/roles";
-import { parseUserRole } from "@/lib/roles";
+import type { Role } from "@/lib/roles";
+import { hasPermission, parseUserRole } from "@/lib/roles";
 
 export class AuthRoleError extends Error {
   constructor(
@@ -20,30 +20,42 @@ export class AuthRoleError extends Error {
 }
 
 /**
- * App Router / server actions: require an exact Clerk role (from publicMetadata.role).
+ * App Router: current user's role from Clerk (publicMetadata.role), default client.
  */
-export async function requireRoleServer(
-  requiredRole: UserRole
-): Promise<{ userId: string; role: UserRole }> {
+export async function getCurrentUserRole(): Promise<Role> {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new AuthRoleError("Unauthorized", 401);
+  }
+  const user = await currentUser();
+  return parseUserRole(user?.publicMetadata);
+}
+
+/**
+ * App Router / server actions: require at least `minimumRole` in the hierarchy.
+ */
+export async function requirePermissionServer(
+  minimumRole: Role
+): Promise<{ userId: string; role: Role }> {
   const { userId } = await auth();
   if (!userId) {
     throw new AuthRoleError("Unauthorized", 401);
   }
   const user = await currentUser();
   const role = parseUserRole(user?.publicMetadata);
-  if (role !== requiredRole) {
+  if (!hasPermission(role, minimumRole)) {
     throw new AuthRoleError("Forbidden", 403);
   }
   return { userId, role };
 }
 
 /**
- * Pages Router API routes: require an exact Clerk role.
+ * Pages Router API: require at least `minimumRole` in the hierarchy.
  */
-export async function requireRolePages(
+export async function requirePermissionPages(
   req: NextApiRequest,
-  requiredRole: UserRole
-): Promise<{ userId: string; role: UserRole }> {
+  minimumRole: Role
+): Promise<{ userId: string; role: Role }> {
   const { userId } = getAuth(req);
   if (!userId) {
     throw new AuthRoleError("Unauthorized", 401);
@@ -51,8 +63,14 @@ export async function requireRolePages(
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
   const role = parseUserRole(user.publicMetadata);
-  if (role !== requiredRole) {
+  if (!hasPermission(role, minimumRole)) {
     throw new AuthRoleError("Forbidden", 403);
   }
   return { userId, role };
 }
+
+/** @deprecated Use {@link requirePermissionServer} */
+export const requireRoleServer = requirePermissionServer;
+
+/** @deprecated Use {@link requirePermissionPages} */
+export const requireRolePages = requirePermissionPages;

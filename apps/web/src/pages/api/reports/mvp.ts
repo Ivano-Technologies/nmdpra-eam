@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { ConvexHttpClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
 
-import { AuthRoleError, requireRolePages } from "@/lib/auth";
+import { AuthRoleError, requirePermissionPages } from "@/lib/auth";
 
 /** No import from repo-root `convex/_generated` — Vercel Root Directory `apps/web` omits that tree. */
 const mvpReportDataQuery = makeFunctionReference<"query">(
@@ -29,7 +29,7 @@ export default async function handler(
   }
 
   try {
-    await requireRolePages(req, "admin");
+    await requirePermissionPages(req, "admin");
   } catch (e) {
     if (e instanceof AuthRoleError) {
       return res.status(e.status).json({

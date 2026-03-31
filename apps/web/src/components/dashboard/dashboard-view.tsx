@@ -31,7 +31,13 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { parseUserRole, type UserRole } from "@/lib/roles";
+import { UserRoleManager } from "@/components/dashboard/user-role-manager";
+import {
+  hasPermission,
+  parseUserRole,
+  roleLabel,
+  type Role
+} from "@/lib/roles";
 import type {
   ApiErrorBody,
   MvpReportResponse,
@@ -139,13 +145,16 @@ function ExpiryBandLegend() {
   );
 }
 
-function DashboardSectionNav() {
+function DashboardSectionNav({ showOwnerLink }: { showOwnerLink?: boolean }) {
   const links = [
     { href: "#section-overview", label: "Overview" },
     { href: "#section-expiry-radar", label: "Expiry radar" },
     { href: "#section-risk-ranking", label: "Risk ranking" },
-    { href: "#section-reports", label: "Reports" }
-  ] as const;
+    { href: "#section-reports", label: "Reports" },
+    ...(showOwnerLink
+      ? ([{ href: "#section-owner-users", label: "User roles" }] as const)
+      : [])
+  ];
   return (
     <nav
       className="border-border flex flex-wrap gap-x-4 gap-y-1 border-b pb-3 text-sm"
@@ -167,7 +176,8 @@ function DashboardSectionNav() {
 export function DashboardView() {
   const { getToken } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
-  const role: UserRole = parseUserRole(user?.publicMetadata);
+  const role: Role = parseUserRole(user?.publicMetadata);
+  const canAdmin = hasPermission(role, "admin");
   const [mvp, setMvp] = useState<MvpReportResponse | null>(null);
   const [risk, setRisk] = useState<RiskRankingRow[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -237,7 +247,7 @@ export function DashboardView() {
     if (!userLoaded) {
       return;
     }
-    if (role !== "admin") {
+    if (!canAdmin) {
       setMvp(null);
       setRisk(null);
       setError(null);
@@ -245,7 +255,7 @@ export function DashboardView() {
       return;
     }
     void loadAdminData();
-  }, [userLoaded, role, loadAdminData]);
+  }, [userLoaded, canAdmin, loadAdminData]);
 
   const chartData = useMemo(
     () => (mvp ? aggregateExpiryCounts(mvp.rows) : []),
@@ -322,7 +332,7 @@ export function DashboardView() {
                 className="border-border text-muted-foreground rounded-full border px-2 py-0.5 text-xs"
                 title="From Clerk publicMetadata.role"
               >
-                {role === "admin" ? "Admin" : "Client"}
+                {roleLabel(role)}
               </span>
               <SystemStatus />
             </div>
@@ -344,23 +354,23 @@ export function DashboardView() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
-            {role === "admin"
+            {canAdmin
               ? "Licence intelligence overview — data from live API."
-              : "Limited dashboard — full analytics and MVP reports require an admin role."}
+              : "Limited dashboard — full analytics and MVP reports require an admin or owner role."}
           </p>
-          {mvp && !loading && role === "admin" ? (
+          {mvp && !loading && canAdmin ? (
             <>
               <p className="text-foreground mt-2 text-sm font-medium">
                 Last updated: {formatLastUpdated(mvp.generatedAt)}
               </p>
               <div className="mt-4">
-                <DashboardSectionNav />
+                <DashboardSectionNav showOwnerLink={role === "owner"} />
               </div>
             </>
           ) : null}
         </div>
 
-        {error && role === "admin" ? (
+        {error && canAdmin ? (
           <Card className="border-destructive/50">
             <CardHeader>
               <CardTitle className="text-destructive">
@@ -376,22 +386,22 @@ export function DashboardView() {
           </Card>
         ) : null}
 
-        {role === "client" && !loading ? (
+        {!canAdmin && !loading ? (
           <Card className="border-border">
             <CardHeader>
               <CardTitle>Client access</CardTitle>
               <CardDescription>
                 You can review organisation-level compliance when that data is
                 wired to your account. System-wide vendor analytics, risk scoring,
-                PDF/email reports, and data ingestion are limited to{" "}
-                <span className="text-foreground font-medium">admin</span>{" "}
-                users.
+                PDF/email reports, and data ingestion require an{" "}
+                <span className="text-foreground font-medium">admin</span> or{" "}
+                <span className="text-foreground font-medium">owner</span> role.
               </CardDescription>
             </CardHeader>
           </Card>
         ) : null}
 
-        {role === "admin" && loading ? (
+        {canAdmin && loading ? (
           <div className="space-y-3">
             <p className="text-muted-foreground text-sm">
               Fetching latest compliance data…
@@ -404,7 +414,7 @@ export function DashboardView() {
               <Skeleton className="h-64 md:col-span-3 lg:col-span-6" />
             </div>
           </div>
-        ) : role === "admin" && mvp ? (
+        ) : canAdmin && mvp ? (
           <>
             <section
               id="section-overview"
@@ -568,6 +578,8 @@ export function DashboardView() {
                 </CardContent>
               ) : null}
             </Card>
+
+            {role === "owner" ? <UserRoleManager /> : null}
           </>
         ) : null}
       </div>
