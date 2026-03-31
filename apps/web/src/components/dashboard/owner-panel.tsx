@@ -4,6 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { DataControlCard } from "@/components/dashboard/data-control-card";
 import { UserRoleManager } from "@/components/dashboard/user-role-manager";
 import {
   Card,
@@ -221,6 +222,7 @@ export function OwnerPanel() {
         </p>
       </div>
       <UserRoleManager />
+      <DataControlCard />
       <OwnerMetricsCard />
       <AccessLogsCard />
     </section>

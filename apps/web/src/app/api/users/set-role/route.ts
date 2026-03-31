@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { appendAuditLog } from "@/lib/audit-server";
 import type { Role } from "@/lib/roles";
 import { parseUserRole } from "@/lib/roles";
+import { parseOrgId } from "@/lib/tenant";
 
 const VALID_ROLES: Role[] = ["owner", "admin", "client"];
 
@@ -67,11 +68,13 @@ export async function POST(req: Request) {
     publicMetadata: { ...prev, role: newRole }
   });
 
+  const orgId = parseOrgId(self.publicMetadata);
   await appendAuditLog({
     action: "role.change",
     actorUserId: userId,
     targetUserId,
-    metadata: { prevRole, newRole }
+    metadata: { prevRole, newRole },
+    ...(orgId !== null ? { orgId } : {})
   });
 
   return NextResponse.json({ success: true });

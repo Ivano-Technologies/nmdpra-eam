@@ -36,3 +36,15 @@ export const setLastSentMutation = makeFunctionReference<"mutation">(
 export const mvpReportDataQuery = makeFunctionReference<"query">(
   "licenses:mvpReportData"
 );
+
+export const deleteOrgDataMutation = makeFunctionReference<"mutation">(
+  "orgDeletion:deleteOrgData"
+);
+
+export const recordConsentMutation = makeFunctionReference<"mutation">(
+  "consent:recordAcceptance"
+);
+
+export const hasConsentQuery = makeFunctionReference<"query">(
+  "consent:hasAccepted"
+);

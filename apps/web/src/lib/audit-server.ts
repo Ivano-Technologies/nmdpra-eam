@@ -8,6 +8,8 @@ export async function appendAuditLog(input: {
   actorUserId: string;
   targetUserId?: string;
   metadata?: unknown;
+  /** When set, included in org-wide purge (Convex auditLogs.by_org). */
+  orgId?: string;
 }): Promise<void> {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
   const secret = process.env.AUDIT_SECRET?.trim();
@@ -18,5 +20,12 @@ export async function appendAuditLog(input: {
     return;
   }
   const client = new ConvexHttpClient(url);
-  await client.mutation(auditAppend, { secret, ...input });
+  await client.mutation(auditAppend, {
+    secret,
+    action: input.action,
+    actorUserId: input.actorUserId,
+    targetUserId: input.targetUserId,
+    metadata: input.metadata,
+    ...(input.orgId !== undefined ? { orgId: input.orgId } : {})
+  });
 }

@@ -17,8 +17,23 @@ export default defineSchema({
     actorUserId: v.string(),
     targetUserId: v.optional(v.string()),
     metadata: v.optional(v.any()),
-    createdAt: v.number()
-  }).index("by_created", ["createdAt"]),
+    createdAt: v.number(),
+    /** When set, row can be purged with org data deletion. */
+    orgId: v.optional(v.string())
+  })
+    .index("by_created", ["createdAt"])
+    .index("by_org", ["orgId"]),
+
+  /** Recorded policy / upload consent (server-written via secret). */
+  consents: defineTable({
+    userId: v.string(),
+    orgId: v.string(),
+    version: v.string(),
+    scope: v.union(v.literal("terms"), v.literal("upload")),
+    acceptedAt: v.number()
+  })
+    .index("by_org", ["orgId"])
+    .index("by_user_org_scope", ["userId", "orgId", "scope"]),
 
   licenses: defineTable({
     vendorId: v.id("vendors"),

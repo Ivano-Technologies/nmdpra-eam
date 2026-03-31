@@ -7,7 +7,8 @@ export const append = mutation({
     action: v.string(),
     actorUserId: v.string(),
     targetUserId: v.optional(v.string()),
-    metadata: v.optional(v.any())
+    metadata: v.optional(v.any()),
+    orgId: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     const expected = process.env.AUDIT_SECRET;
@@ -19,7 +20,8 @@ export const append = mutation({
       actorUserId: args.actorUserId,
       targetUserId: args.targetUserId,
       metadata: args.metadata,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      ...(args.orgId !== undefined ? { orgId: args.orgId } : {})
     });
   }
 });
@@ -46,7 +48,8 @@ export const list = query({
       actorUserId: r.actorUserId,
       targetUserId: r.targetUserId,
       metadata: r.metadata,
-      createdAt: r.createdAt
+      createdAt: r.createdAt,
+      orgId: r.orgId
     }));
   }
 });

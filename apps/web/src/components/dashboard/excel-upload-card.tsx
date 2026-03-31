@@ -19,6 +19,7 @@ export function ExcelUploadCard() {
   const { getToken } = useAuth();
   const { user } = useUser();
   const [uploading, setUploading] = useState(false);
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const metaOrg = parseOrgId(user?.publicMetadata);
   const [orgIdInput, setOrgIdInput] = useState("");
 
@@ -32,6 +33,10 @@ export function ExcelUploadCard() {
       const file = input?.files?.[0];
       if (!file) {
         toast.error("Choose an Excel file first.");
+        return;
+      }
+      if (!rightsConfirmed) {
+        toast.error("Confirm that you have the right to upload and process this data.");
         return;
       }
       setUploading(true);
@@ -55,6 +60,11 @@ export function ExcelUploadCard() {
         if (!res.ok) {
           throw new Error(body.error ?? `Upload failed (${res.status})`);
         }
+        await fetch("/api/consent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scope: "upload" })
+        }).catch(() => undefined);
         toast.success(
           `Imported ${body.imported ?? 0} row(s).${body.warnings?.length ? " See warnings in response." : ""}`
         );
@@ -65,7 +75,7 @@ export function ExcelUploadCard() {
         setUploading(false);
       }
     },
-    [getToken, needsOrgField, orgIdInput]
+    [getToken, needsOrgField, orgIdInput, rightsConfirmed]
   );
 
   return (
@@ -79,9 +89,15 @@ export function ExcelUploadCard() {
           Upload Excel
         </CardTitle>
         <CardDescription>
-          Ingest licence rows into Convex for your organization. Requires{" "}
-          <span className="text-foreground font-medium">BLOB_READ_WRITE_TOKEN</span>{" "}
-          and secrets on the server.
+          Ingest licence rows into Convex for your organization. See the{" "}
+          <a
+            href="/data-policy"
+            className="text-foreground font-medium underline-offset-2 hover:underline"
+          >
+            data policy (draft)
+          </a>
+          . Server storage requires{" "}
+          <span className="text-foreground font-medium">BLOB_READ_WRITE_TOKEN</span>.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -110,6 +126,18 @@ export function ExcelUploadCard() {
               </p>
             </div>
           ) : null}
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={rightsConfirmed}
+              onChange={(e) => setRightsConfirmed(e.target.checked)}
+              className="border-input mt-1 size-4 rounded"
+            />
+            <span className="text-neutral-700 dark:text-neutral-300">
+              I confirm I have the right to upload this file and to have the licence
+              data processed and stored for my organization.
+            </span>
+          </label>
           <div className="space-y-1">
             <label
               htmlFor="upload-file"
@@ -126,7 +154,7 @@ export function ExcelUploadCard() {
               required
             />
           </div>
-          <Button type="submit" disabled={uploading}>
+          <Button type="submit" disabled={uploading || !rightsConfirmed}>
             {uploading ? "Uploading…" : "Upload and ingest"}
           </Button>
         </form>
