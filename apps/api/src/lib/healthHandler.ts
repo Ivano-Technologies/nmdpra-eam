@@ -8,6 +8,7 @@ export const sendHealth = (req: Request, res: Response): void => {
   const started = (req as RequestWithStartTime).startTime;
   const latencyMs = started !== undefined ? Date.now() - started : 0;
   res.status(200).json({
+    status: "ok",
     ok: true,
     service: "nmdpra-rmlis-api",
     version: readApiVersion(),

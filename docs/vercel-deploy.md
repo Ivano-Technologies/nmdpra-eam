@@ -25,11 +25,13 @@ Must finish with **no errors**. Optional: `node apps/api/dist/server.js` for a l
 
 ## 2) Convex (required before Vercel)
 
+Requires a one-time login: `npx convex login`, then from the repo root:
+
 ```bash
 npx convex deploy
 ```
 
-Ensures indexes (e.g. `by_vendor_type_expiry`) and ingest/query logic match production.
+Ensures indexes (e.g. `by_vendor_type_expiry`) and ingest/query logic match production. In the Convex dashboard, confirm **`mvpReportData`**, **`expiringBuckets`**, and **`riskRanking`** are deployed (see [`convex/licenses.ts`](../convex/licenses.ts)).
 
 ---
 
@@ -56,7 +58,11 @@ If Root is **`apps/api`**, this repo includes [`apps/api/vercel.json`](../apps/a
 
 Set env vars per [`apps/web/.env.example`](../apps/web/.env.example). **`NEXT_PUBLIC_API_BASE_URL`** should point at your deployed API (e.g. `https://eam.techivano.com/api`).
 
-**CORS:** On the **API** Vercel project, set **`CORS_ORIGIN`** to your web app’s origin (comma-separated for Preview + Production URLs). In production, if `CORS_ORIGIN` is unset, the API does **not** send permissive CORS headers.
+**Same domain (`eam.techivano.com` → Next, `/api/*` → Express):** assign the **apex** domain to the **web** project and set **`BACKEND_API_ORIGIN`** on the web project to your **API** deployment origin (no trailing slash), e.g. `https://<api-project>.vercel.app`. [`apps/web/next.config.ts`](../apps/web/next.config.ts) adds rewrites so `GET /api/health` on the web hostname proxies to the API. Keep **`NEXT_PUBLIC_API_BASE_URL=https://eam.techivano.com/api`** so the dashboard calls the same origin.
+
+**Alternative:** point **`NEXT_PUBLIC_API_BASE_URL`** at the API’s own URL (or `api.` subdomain) and set **`CORS_ORIGIN`** on the API to the web origin (below).
+
+**CORS:** On the **API** Vercel project, set **`CORS_ORIGIN`** to your web app’s origin (comma-separated for Preview + Production URLs) when the browser calls the API cross-origin. In production, if `CORS_ORIGIN` is unset, the API does **not** send permissive CORS headers.
 
 ---
 
@@ -161,7 +167,8 @@ Run through this list before a client or stakeholder demo.
 |---------|----------------|
 | Build **Cannot find module '@rmlis/shared'** / **'@rmlis/reporting/mvp'** | Root **Install** must be `pnpm install` from repo root (not `npm`). Confirm workspace `dependencies` and `exports` / `dist` as above; run `pnpm build` locally. |
 | PDF **500** | `puppeteer-core` + `@sparticuz/chromium`; `executablePath: await chromium.executablePath()`; [`vercel.json`](../vercel.json) function `maxDuration` / `memory`; Vercel logs |
-| **Empty** data | `pnpm ingest -- --json=C:\path\to\data.json` (local env matches Convex) |
+| **Empty** data | From repo root: `pnpm ingest -- --json=data/nmdpra_data.sample.json` or your file path. Requires root `.env.local` with **`CONVEX_URL`** + **`INGEST_SECRET`** (same as Convex dashboard). The ingest script resolves env and relative paths from the monorepo root even when pnpm runs from `packages/db`. |
+| **Excel ENOENT** / file not found | Windows: use `C:\Users\<YourUsername>\Downloads\…` (not `C:\Users\Downloads\…`). Safer: copy the workbook to [`data/`](../data/) e.g. `data/lab.xlsx`, then `pnpm ingest -- --file=data/lab.xlsx`. Bad spreadsheet rows log `[ingest] Row N skipped: …` with a column preview before the run fails. |
 | Env **ignored** | **Redeploy** after saving env vars |
 | **404** | Root `/`, `api/index.js` present after build; [`vercel.json`](../vercel.json) **rewrites** to `/api` (same role as older “routes → /api” docs) |
 
