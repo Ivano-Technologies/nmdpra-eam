@@ -15,7 +15,11 @@ import {
 } from "@/components/ui/card";
 import { parseOrgId } from "@/lib/tenant";
 
-export function ExcelUploadCard() {
+type ExcelUploadCardProps = {
+  onUploadSuccess?: () => void | Promise<void>;
+};
+
+export function ExcelUploadCard({ onUploadSuccess }: ExcelUploadCardProps = {}) {
   const { getToken } = useAuth();
   const { user } = useUser();
   const [uploading, setUploading] = useState(false);
@@ -68,6 +72,7 @@ export function ExcelUploadCard() {
         toast.success(
           `Imported ${body.imported ?? 0} row(s).${body.warnings?.length ? " See warnings in response." : ""}`
         );
+        await onUploadSuccess?.();
         input.value = "";
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Upload failed");
@@ -75,7 +80,7 @@ export function ExcelUploadCard() {
         setUploading(false);
       }
     },
-    [getToken, needsOrgField, orgIdInput, rightsConfirmed]
+    [getToken, needsOrgField, orgIdInput, onUploadSuccess, rightsConfirmed]
   );
 
   return (

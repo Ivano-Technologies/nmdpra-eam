@@ -48,3 +48,39 @@ export const recordConsentMutation = makeFunctionReference<"mutation">(
 export const hasConsentQuery = makeFunctionReference<"query">(
   "consent:hasAccepted"
 );
+
+export const userPreferencesGetQuery = makeFunctionReference<"query">(
+  "userPreferences:getForUser"
+);
+
+export const userPreferencesUpsertMutation = makeFunctionReference<"mutation">(
+  "userPreferences:upsertPatch"
+);
+
+export const userDataErasureMutation = makeFunctionReference<"mutation">(
+  "userDataDeletion:eraseUserData"
+);
+
+export const userPreferencesRequestDeletionMutation = makeFunctionReference<"mutation">(
+  "userPreferences:requestDeletion"
+);
+
+export const auditAppendComplianceMutation = makeFunctionReference<"mutation">(
+  "audit:appendCompliance"
+);
+
+export const rateLimitCheckMutation = makeFunctionReference<"mutation">(
+  "rateLimit:checkAndIncrement"
+);
+
+export const dataExportsCreateMutation = makeFunctionReference<"mutation">(
+  "dataExports:createExportJob"
+);
+
+export const dataExportsFinalizeMutation = makeFunctionReference<"mutation">(
+  "dataExports:finalizeExportStub"
+);
+
+export const dataExportsGetQuery = makeFunctionReference<"query">(
+  "dataExports:getExportForUser"
+);

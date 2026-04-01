@@ -1,27 +1,40 @@
 "use client";
 
 import { useAuth, useUser } from "@clerk/nextjs";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   XAxis,
   YAxis
 } from "recharts";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 import { ClientDashboardPlaceholder } from "@/components/dashboard/client-dashboard-placeholder";
-import { ExcelUploadCard } from "@/components/dashboard/excel-upload-card";
-import { ReportSubscriptionsCard } from "@/components/dashboard/report-subscriptions-card";
+import { DashboardCustomizePanel } from "@/components/dashboard/dashboard-customize-panel";
+import { DigestPreferencesCard } from "@/components/dashboard/digest-preferences-card";
 import {
   DashboardChartSkeleton,
   DashboardKpiSkeleton,
   DashboardSecondaryKpiSkeleton,
   DashboardTableSkeleton
 } from "@/components/dashboard/dashboard-skeletons";
+import { ExcelUploadCard } from "@/components/dashboard/excel-upload-card";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { OwnerPanel } from "@/components/dashboard/owner-panel";
+import { ReportSubscriptionsCard } from "@/components/dashboard/report-subscriptions-card";
+import { SavedViewsBar } from "@/components/dashboard/saved-views-bar";
+import { TrustStrip } from "@/components/dashboard/trust-strip";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,6 +54,19 @@ import {
   TableRow
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
+import { useUserPreferences } from "@/hooks/use-user-preferences";
+import { mergeDashboardLayout } from "@/lib/dashboard-defaults";
+import {
+  filterMvpRows,
+  filterRiskRows,
+  summarizeMvpRows
+} from "@/lib/saved-view-filters";
+import { parseOrgId } from "@/lib/tenant";
+import {
   hasPermission,
   parseUserRole,
   type Role
@@ -50,6 +76,13 @@ import type {
   MvpReportResponse,
   RiskRankingRow
 } from "@/types/api";
+import type {
+  DashboardLayout,
+  DashboardSectionId,
+  DigestPreferences,
+  SavedView,
+  SavedViewFilter
+} from "@/types/user-preferences";
 
 const STATUS_ORDER = ["EXPIRED", "CRITICAL", "WARNING", "SAFE"] as const;
 
@@ -73,6 +106,17 @@ function labelForStatus(s: string): string {
     default:
       return s;
   }
+}
+
+function friendlyLoadError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("403") || m.includes("forbidden")) {
+    return "You don’t have permission to load this data. Ask an owner to confirm your role.";
+  }
+  if (m.includes("503") || m.includes("not configured")) {
+    return "The service is not fully configured (environment). Try again later or contact support.";
+  }
+  return message;
 }
 
 function aggregateExpiryCounts(rows: MvpReportResponse["rows"]) {
@@ -131,19 +175,23 @@ function ExpiryBandLegend() {
   const items = [
     {
       label: "Expired (past due)",
-      variant: "expired" as const
+      variant: "expired" as const,
+      tip: "Licence end date is before today."
     },
     {
       label: "Critical (≤30 days)",
-      variant: "warning" as const
+      variant: "warning" as const,
+      tip: "Expires within 30 days — highest urgency."
     },
     {
       label: "Warning (31–60 days)",
-      variant: "warning" as const
+      variant: "warning" as const,
+      tip: "Expires in 31–60 days."
     },
     {
       label: "Safe (>60 days)",
-      variant: "active" as const
+      variant: "active" as const,
+      tip: "More than 60 days until expiry."
     }
   ] as const;
   return (
@@ -151,121 +199,282 @@ function ExpiryBandLegend() {
       className="text-muted-foreground flex list-none flex-wrap gap-x-4 gap-y-2 text-xs"
       aria-label="Expiry band meanings"
     >
-      {items.map(({ label, variant }) => (
+      {items.map(({ label, variant, tip }) => (
         <li key={label} className="inline-flex items-center gap-2">
-          <StatusBadge variant={variant}>{label}</StatusBadge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-help">
+                <StatusBadge variant={variant}>{label}</StatusBadge>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{tip}</TooltipContent>
+          </Tooltip>
         </li>
       ))}
     </ul>
   );
 }
 
+function KpiCard({
+  label,
+  value,
+  hint
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+}) {
+  const labelEl = hint ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <CardDescription className="cursor-help text-xs leading-snug">
+          {label}
+        </CardDescription>
+      </TooltipTrigger>
+      <TooltipContent>{hint}</TooltipContent>
+    </Tooltip>
+  ) : (
+    <CardDescription className="text-xs leading-snug">{label}</CardDescription>
+  );
+  return (
+    <Card className="transition-shadow duration-150 hover:shadow-md">
+      <CardHeader className="pb-2">
+        {labelEl}
+        <CardTitle className="text-3xl tabular-nums">{value}</CardTitle>
+        <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
+          Current snapshot
+        </p>
+      </CardHeader>
+    </Card>
+  );
+}
+
+function WeeklyInsightCard({
+  mvp,
+  snippet
+}: {
+  mvp: MvpReportResponse | null;
+  snippet?: string;
+}) {
+  const line = snippet
+    ? snippet
+    : mvp
+      ? `Current snapshot: ${mvp.summary.critical} critical, ${mvp.summary.expired} expired licences (live data).`
+      : null;
+  if (!line) {
+    return null;
+  }
+  return (
+    <Card className="border-border bg-muted/20">
+      <CardHeader className="py-3">
+        <CardTitle className="text-base font-medium">Weekly insight</CardTitle>
+        <CardDescription className="text-sm">{line}</CardDescription>
+      </CardHeader>
+    </Card>
+  );
+}
+
+async function fetchAdminDashboard(getToken: () => Promise<string | null>): Promise<{
+  mvp: MvpReportResponse;
+  risk: RiskRankingRow[];
+}> {
+  const token = await getToken();
+  const authHeaders: HeadersInit =
+    token !== null && token !== ""
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+  const [mvpRes, riskRes] = await Promise.all([
+    fetch("/api/reports/mvp", {
+      cache: "no-store",
+      headers: authHeaders
+    }),
+    fetch("/api/licenses/risk-ranking", {
+      cache: "no-store",
+      headers: authHeaders
+    })
+  ]);
+  const mvpJson = (await mvpRes.json().catch(() => ({}))) as
+    | { success: true; data: MvpReportResponse }
+    | { success: false; error?: string }
+    | ApiErrorBody;
+  if (!mvpRes.ok) {
+    const err =
+      "error" in mvpJson && typeof mvpJson.error === "string"
+        ? mvpJson.error
+        : undefined;
+    throw new Error(err ?? `MVP report failed (${mvpRes.status})`);
+  }
+  if (
+    !("success" in mvpJson) ||
+    mvpJson.success !== true ||
+    !mvpJson.data
+  ) {
+    const err =
+      "error" in mvpJson && typeof mvpJson.error === "string"
+        ? mvpJson.error
+        : "MVP report returned an invalid response";
+    throw new Error(err);
+  }
+  if (!riskRes.ok) {
+    const body = (await riskRes.json().catch(() => ({}))) as ApiErrorBody;
+    throw new Error(body.error ?? `Risk ranking failed (${riskRes.status})`);
+  }
+  const risk = (await riskRes.json()) as RiskRankingRow[];
+  return { mvp: mvpJson.data, risk };
+}
+
 export function DashboardView() {
   const { getToken } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const role: Role = parseUserRole(user?.publicMetadata);
   const canAdmin = hasPermission(role, "admin");
-  const [mvp, setMvp] = useState<MvpReportResponse | null>(null);
-  const [risk, setRisk] = useState<RiskRankingRow[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const orgConfirmed = Boolean(parseOrgId(user?.publicMetadata));
+
+  const { preferences, patchPreferences, patchDebounced } =
+    useUserPreferences();
+
+  const [customizeMode, setCustomizeMode] = useState(false);
+  const [filter, setFilter] = useState<SavedViewFilter>({});
+  const [activeViewId, setActiveViewId] = useState<string | null>(null);
+
+  const mergedLayout = useMemo(
+    () => mergeDashboardLayout(preferences?.dashboardLayout, role),
+    [preferences?.dashboardLayout, role]
+  );
+  const [layoutState, setLayoutState] = useState<DashboardLayout>(mergedLayout);
+
+  useEffect(() => {
+    setLayoutState(mergedLayout);
+  }, [mergedLayout]);
+
+  const viewParam = searchParams?.get("view") ?? null;
+  useEffect(() => {
+    if (!viewParam || !preferences?.savedViews?.length) {
+      return;
+    }
+    const v = preferences.savedViews.find((s) => s.id === viewParam);
+    if (v) {
+      setFilter(v.filters);
+      setActiveViewId(v.id);
+    }
+  }, [viewParam, preferences?.savedViews]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !userLoaded) {
+      return;
+    }
+    if (pathname !== "/dashboard") {
+      return;
+    }
+    if (window.location.hash.length > 1) {
+      return;
+    }
+    const defaults: Partial<Record<Role, string>> = {
+      client: "#section-client",
+      admin: "#section-overview",
+      owner: "#section-owner-metrics"
+    };
+    const target = defaults[role];
+    if (target) {
+      window.history.replaceState(
+        null,
+        "",
+        `${pathname}${window.location.search}${target}`
+      );
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    }
+  }, [userLoaded, pathname, role]);
+
+  const swrKey = userLoaded && canAdmin ? "admin-dashboard" : null;
+  const {
+    data: adminData,
+    error: swrError,
+    isLoading,
+    isValidating,
+    mutate
+  } = useSWR(
+    swrKey,
+    () => fetchAdminDashboard(getToken),
+    { refreshInterval: 120_000, revalidateOnFocus: true }
+  );
+
+  const mvpRaw = adminData?.mvp ?? null;
+  const riskRaw = adminData?.risk ?? null;
+  const loadError = swrError
+    ? swrError instanceof Error
+      ? swrError.message
+      : "Failed to load data"
+    : null;
+
+  const effectiveFilter = useMemo((): SavedViewFilter => {
+    return { ...filter };
+  }, [filter]);
+
+  const displayMvp = useMemo(() => {
+    if (!mvpRaw) {
+      return null;
+    }
+    const rows = filterMvpRows(mvpRaw.rows, effectiveFilter);
+    const summary = summarizeMvpRows(rows);
+    const topRiskVendors =
+      mvpRaw.topRiskVendors?.filter((t) =>
+        rows.some((r) => r.vendor === t.vendorName)
+      ) ?? mvpRaw.topRiskVendors;
+    return {
+      ...mvpRaw,
+      rows,
+      summary,
+      topRiskVendors
+    };
+  }, [mvpRaw, effectiveFilter]);
+
+  const displayRisk = useMemo(() => {
+    if (!riskRaw) {
+      return null;
+    }
+    return filterRiskRows(riskRaw, effectiveFilter);
+  }, [riskRaw, effectiveFilter]);
+
+  const chartData = useMemo(
+    () => (displayMvp ? aggregateExpiryCounts(displayMvp.rows) : []),
+    [displayMvp]
+  );
+
+  const chartIsEmpty = useMemo(() => {
+    if (!displayMvp) {
+      return true;
+    }
+    if (displayMvp.rows.length === 0) {
+      return true;
+    }
+    return chartData.every((d) => d.value === 0);
+  }, [displayMvp, chartData]);
+
+  const vendorCount = useMemo(() => {
+    if (!displayMvp?.rows.length) {
+      return 0;
+    }
+    return new Set(displayMvp.rows.map((r) => r.vendor)).size;
+  }, [displayMvp]);
+
+  const activePct = useMemo(() => {
+    if (!displayMvp || displayMvp.summary.total <= 0) {
+      return 0;
+    }
+    return Math.round(
+      (displayMvp.summary.safe / displayMvp.summary.total) * 100
+    );
+  }, [displayMvp]);
+
+  const userEmail = user?.primaryEmailAddress?.emailAddress ?? "";
+
   const [emailStatus, setEmailStatus] = useState<
     "idle" | "sending" | "ok" | "err"
   >("idle");
   const [emailMessage, setEmailMessage] = useState<string | null>(null);
-
-  const loadAdminData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = await getToken();
-      const authHeaders: HeadersInit =
-        token !== null && token !== ""
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-      const [mvpRes, riskRes] = await Promise.all([
-        fetch("/api/reports/mvp", {
-          cache: "no-store",
-          headers: authHeaders
-        }),
-        fetch("/api/licenses/risk-ranking", {
-          cache: "no-store",
-          headers: authHeaders
-        })
-      ]);
-      const mvpJson = (await mvpRes.json().catch(() => ({}))) as
-        | { success: true; data: MvpReportResponse }
-        | { success: false; error?: string }
-        | ApiErrorBody;
-      if (!mvpRes.ok) {
-        const err =
-          "error" in mvpJson && typeof mvpJson.error === "string"
-            ? mvpJson.error
-            : undefined;
-        throw new Error(err ?? `MVP report failed (${mvpRes.status})`);
-      }
-      if (
-        !("success" in mvpJson) ||
-        mvpJson.success !== true ||
-        !mvpJson.data
-      ) {
-        const err =
-          "error" in mvpJson && typeof mvpJson.error === "string"
-            ? mvpJson.error
-            : "MVP report returned an invalid response";
-        throw new Error(err);
-      }
-      setMvp(mvpJson.data);
-      if (!riskRes.ok) {
-        const body = (await riskRes.json().catch(() => ({}))) as ApiErrorBody;
-        throw new Error(body.error ?? `Risk ranking failed (${riskRes.status})`);
-      }
-      setRisk((await riskRes.json()) as RiskRankingRow[]);
-    } catch (e) {
-      setMvp(null);
-      setRisk(null);
-      setError(e instanceof Error ? e.message : "Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  }, [getToken]);
-
-  useEffect(() => {
-    if (!userLoaded) {
-      return;
-    }
-    if (!canAdmin) {
-      setMvp(null);
-      setRisk(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    void loadAdminData();
-  }, [userLoaded, canAdmin, loadAdminData]);
-
-  const chartData = useMemo(
-    () => (mvp ? aggregateExpiryCounts(mvp.rows) : []),
-    [mvp]
-  );
-
-  const chartIsEmpty = useMemo(() => {
-    if (!mvp) return true;
-    if (mvp.rows.length === 0) return true;
-    return chartData.every((d) => d.value === 0);
-  }, [mvp, chartData]);
-
-  const vendorCount = useMemo(() => {
-    if (!mvp?.rows.length) return 0;
-    return new Set(mvp.rows.map((r) => r.vendor)).size;
-  }, [mvp]);
-
-  const activePct = useMemo(() => {
-    if (!mvp || mvp.summary.total <= 0) return 0;
-    return Math.round((mvp.summary.safe / mvp.summary.total) * 100);
-  }, [mvp]);
-
-  const userEmail = user?.primaryEmailAddress?.emailAddress ?? "";
 
   const sendEmail = async () => {
     setEmailMessage(null);
@@ -300,126 +509,164 @@ export function DashboardView() {
 
   const pdfHref = "/api/reports/mvp.pdf";
 
-  if (!userLoaded) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-9 w-48 rounded-md bg-muted" />
-        <DashboardKpiSkeleton />
-        <DashboardSecondaryKpiSkeleton />
-        <DashboardChartSkeleton />
-        <DashboardTableSkeleton />
-      </div>
-    );
-  }
+  const handleUploadSuccess = useCallback(async () => {
+    const had = preferences?.milestones?.firstUploadAt;
+    try {
+      await patchPreferences({
+        milestones: { firstUploadAt: Date.now() },
+        onboardingSteps: { firstUpload: true, orgConfirmed: true }
+      });
+      if (!had) {
+        toast.success("First upload recorded — great start.");
+      }
+    } catch {
+      /* ignore */
+    }
+    void mutate();
+  }, [patchPreferences, preferences?.milestones?.firstUploadAt, mutate]);
 
-  if (!canAdmin) {
-    return <ClientDashboardPlaceholder />;
-  }
+  const handleSubscriptionSaved = useCallback(async () => {
+    try {
+      await patchPreferences({
+        onboardingSteps: { reportSubscriptionVerified: true }
+      });
+    } catch {
+      /* ignore */
+    }
+  }, [patchPreferences]);
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          Licence intelligence overview — data from live API.
-        </p>
-        {mvp && !loading ? (
-          <p className="text-foreground mt-2 text-sm font-medium">
-            Last updated: {formatLastUpdated(mvp.generatedAt)}
-          </p>
-        ) : null}
-      </div>
+  const saveLayoutNow = useCallback(() => {
+    void patchPreferences({ dashboardLayout: layoutState });
+    toast.success("Dashboard layout saved");
+  }, [patchPreferences, layoutState]);
 
-      {error ? (
-        <Card className="border-destructive/40 transition-shadow duration-150">
-          <CardHeader>
-            <CardTitle className="text-destructive text-xl font-medium">
-              Failed to load — retry
-            </CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button type="button" onClick={() => void loadAdminData()}>
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
+  const onApplyView = useCallback((view: SavedView | null) => {
+    if (!view) {
+      setFilter({});
+      setActiveViewId(null);
+      return;
+    }
+    setFilter(view.filters);
+    setActiveViewId(view.id);
+  }, []);
 
-      {loading ? (
-        <div className="space-y-6">
-          <p className="text-muted-foreground text-sm">Loading dashboard…</p>
-          <DashboardKpiSkeleton />
-          <DashboardSecondaryKpiSkeleton />
-          <DashboardChartSkeleton />
-          <DashboardTableSkeleton />
-        </div>
-      ) : (
-        <>
-          <ExcelUploadCard />
-          {mvp ? (
-            <>
-              <section
-                id="section-overview"
-                className="scroll-mt-28 space-y-6"
-              >
-            <RiskInsightBanner mvp={mvp} />
+  const onSaveView = useCallback(
+    (name: string, filters: SavedViewFilter) => {
+      const id = crypto.randomUUID();
+      const next: SavedView[] = [
+        ...(preferences?.savedViews ?? []),
+        { id, name, filters }
+      ];
+      void patchPreferences({ savedViews: next }).then(() => {
+        setActiveViewId(id);
+        router.replace(`/dashboard?view=${encodeURIComponent(id)}`, {
+          scroll: false
+        });
+        toast.success("Saved view added");
+      });
+    },
+    [patchPreferences, preferences?.savedViews, router]
+  );
 
-            {/* Primary KPIs: total, expiring soon (30d), expired, active % */}
+  const visibleSections = useMemo(() => {
+    return layoutState.order.filter((id) => !layoutState.hidden.includes(id));
+  }, [layoutState]);
+
+  const [digestSaving, setDigestSaving] = useState(false);
+  const saveDigest = useCallback(
+    async (d: DigestPreferences) => {
+      setDigestSaving(true);
+      try {
+        await patchPreferences({ digest: d });
+        toast.success("Digest preferences saved");
+      } catch {
+        toast.error("Could not save digest preferences");
+      } finally {
+        setDigestSaving(false);
+      }
+    },
+    [patchPreferences]
+  );
+
+  const renderSection = (sectionId: DashboardSectionId) => {
+    switch (sectionId) {
+      case "data-upload":
+        return (
+          <ExcelUploadCard
+            key="data-upload"
+            onUploadSuccess={handleUploadSuccess}
+          />
+        );
+      case "overview":
+        if (!displayMvp) {
+          return null;
+        }
+        return (
+          <section
+            key="overview"
+            id="section-overview"
+            className="scroll-mt-28 space-y-6"
+          >
+            <RiskInsightBanner mvp={displayMvp} />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <KpiCard
                 label="Total licences"
-                value={mvp.summary.total}
-                hint="All licence rows in scope"
+                value={displayMvp.summary.total}
+                hint="All licence rows in the current filtered set"
               />
               <KpiCard
                 label="Expiring soon"
-                value={mvp.summary.expiringIn30Days}
-                hint="Due within 30 days (from MVP summary)"
+                value={displayMvp.summary.expiringIn30Days}
+                hint="Due within 30 days (from row days-to-expiry)"
               />
               <KpiCard
                 label="Expired"
-                value={mvp.summary.expired}
+                value={displayMvp.summary.expired}
                 hint="Past due"
               />
               <KpiCard
                 label="Active %"
                 value={`${activePct}%`}
-                hint="Share in “safe” band"
+                hint="Share in “safe” band within current filters"
               />
             </div>
-
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <KpiCard
                 label="Critical (≤30 days)"
-                value={mvp.summary.critical}
-                hint="Secondary"
+                value={displayMvp.summary.critical}
+                hint="Secondary KPI"
               />
               <KpiCard
                 label="Warning (31–60 days)"
-                value={mvp.summary.warning}
-                hint="Secondary"
+                value={displayMvp.summary.warning}
+                hint="Secondary KPI"
               />
               <KpiCard
                 label="Safe (&gt;60 days)"
-                value={mvp.summary.safe}
-                hint="Secondary"
+                value={displayMvp.summary.safe}
+                hint="Secondary KPI"
               />
               <KpiCard
                 label="Vendors"
                 value={vendorCount}
-                hint="Distinct vendors in report"
+                hint="Distinct vendors in filtered report"
               />
             </div>
-
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               <span className="text-foreground font-medium">Coverage: </span>
-              {mvp.summary.total} licence{mvp.summary.total === 1 ? "" : "s"}{" "}
-              across {vendorCount} vendor{vendorCount === 1 ? "" : "s"}
+              {displayMvp.summary.total} licence
+              {displayMvp.summary.total === 1 ? "" : "s"} across {vendorCount}{" "}
+              vendor{vendorCount === 1 ? "" : "s"}
             </p>
           </section>
-
+        );
+      case "expiry-radar":
+        if (!displayMvp) {
+          return null;
+        }
+        return (
           <Card
+            key="expiry-radar"
             id="section-expiry-radar"
             className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
           >
@@ -427,7 +674,7 @@ export function DashboardView() {
               <div>
                 <CardTitle className="text-xl font-medium">Expiry radar</CardTitle>
                 <CardDescription>
-                  Licence rows by expiry band (from MVP report dataset).
+                  Licence rows by expiry band (filtered dataset).
                 </CardDescription>
               </div>
               <ExpiryBandLegend />
@@ -449,7 +696,7 @@ export function DashboardView() {
                     />
                     <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                    <Tooltip
+                    <RechartsTooltip
                       contentStyle={{ borderRadius: 8 }}
                       formatter={(value) => [Number(value ?? 0), "Licences"]}
                     />
@@ -463,29 +710,42 @@ export function DashboardView() {
               )}
             </CardContent>
           </Card>
-
+        );
+      case "risk-ranking":
+        return (
           <Card
+            key="risk-ranking"
             id="section-risk-ranking"
             className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
           >
             <CardHeader>
               <CardTitle className="text-xl font-medium">Risk ranking</CardTitle>
               <CardDescription>
-                Vendors sorted by risk score (highest first).
+                Vendors sorted by risk score (highest first); filtered by saved
+                view.
               </CardDescription>
             </CardHeader>
             <CardContent className="overflow-x-auto">
-              {risk && risk.length > 0 ? (
+              {displayRisk && displayRisk.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Vendor</TableHead>
-                      <TableHead className="text-right">Risk score</TableHead>
+                      <TableHead className="text-right">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">Risk score</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Higher scores need more attention first.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableHead>
                       <TableHead>Expiry</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="[&_tr:nth-child(even)]:bg-muted/40">
-                    {risk.slice(0, 50).map((row, i) => (
+                    {displayRisk.slice(0, 50).map((row, i) => (
                       <TableRow
                         key={`${row.vendorName}-${row.expiryDate}-${i}`}
                         className="transition-colors duration-150"
@@ -510,8 +770,11 @@ export function DashboardView() {
               )}
             </CardContent>
           </Card>
-
+        );
+      case "reports":
+        return (
           <Card
+            key="reports"
             id="section-reports"
             className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
           >
@@ -557,45 +820,169 @@ export function DashboardView() {
               </CardContent>
             ) : null}
           </Card>
+        );
+      case "owner-panel":
+        if (role !== "owner") {
+          return null;
+        }
+        return (
+          <div
+            key="owner-panel"
+            id="section-owner-panel"
+            className="scroll-mt-28 space-y-8"
+          >
+            <OwnerPanel />
+            <ReportSubscriptionsCard
+              onSubscriptionSaved={handleSubscriptionSaved}
+            />
+            <DigestPreferencesCard
+              key={preferences?.updatedAt ?? "digest"}
+              digest={preferences?.digest}
+              saving={digestSaving}
+              onSave={saveDigest}
+            />
+            <WeeklyInsightCard
+              mvp={mvpRaw}
+              snippet={preferences?.weeklySummarySnippet}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
-          {role === "owner" ? (
-            <>
-              <OwnerPanel />
-              <ReportSubscriptionsCard />
-            </>
-          ) : null}
-            </>
-          ) : null}
-        </>
-      )}
-    </div>
-  );
-}
+  if (!userLoaded) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-9 w-48 rounded-md bg-muted" />
+        <DashboardKpiSkeleton />
+        <DashboardSecondaryKpiSkeleton />
+        <DashboardChartSkeleton />
+        <DashboardTableSkeleton />
+      </div>
+    );
+  }
 
-function KpiCard({
-  label,
-  value,
-  hint
-}: {
-  label: string;
-  value: number | string;
-  hint?: string;
-}) {
+  if (!canAdmin) {
+    return <ClientDashboardPlaceholder />;
+  }
+
   return (
-    <Card className="transition-shadow duration-150 hover:shadow-md">
-      <CardHeader className="pb-2">
-        <CardDescription className="text-xs leading-snug">{label}</CardDescription>
-        <CardTitle className="text-3xl tabular-nums">{value}</CardTitle>
-        {hint ? (
-          <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
-            {hint}
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            Licence intelligence overview — data from live API.
           </p>
+          <TrustStrip generatedAtIso={mvpRaw?.generatedAt} role={role} />
+          {mvpRaw && !isLoading ? (
+            <p className="text-foreground mt-2 flex flex-wrap items-center gap-2 text-sm font-medium">
+              <span>Last updated: {formatLastUpdated(mvpRaw.generatedAt)}</span>
+              {isValidating ? (
+                <span className="text-muted-foreground font-normal">
+                  Updating…
+                </span>
+              ) : null}
+            </p>
+          ) : null}
+        </div>
+
+        <OnboardingChecklist
+          preferences={preferences}
+          termsAccepted
+          orgConfirmed={orgConfirmed}
+          onDismiss={() => {
+            void patchPreferences({
+              onboardingSteps: { checklistDismissed: true }
+            });
+          }}
+        />
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant={customizeMode ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setCustomizeMode((c) => !c)}
+          >
+            {customizeMode ? "Done customizing" : "Customize layout"}
+          </Button>
+        </div>
+
+        {customizeMode ? (
+          <DashboardCustomizePanel
+            layout={layoutState}
+            onChange={(next) => {
+              setLayoutState(next);
+              patchDebounced({ dashboardLayout: next });
+            }}
+            onSave={saveLayoutNow}
+          />
+        ) : null}
+
+        <SavedViewsBar
+          savedViews={preferences?.savedViews}
+          filter={filter}
+          onFilterChange={(next) => {
+            setFilter(next);
+            setActiveViewId(null);
+          }}
+          activeViewId={activeViewId}
+          onApplyView={onApplyView}
+          onSaveView={onSaveView}
+        />
+
+        {loadError ? (
+          <Card className="border-destructive/40 transition-shadow duration-150">
+            <CardHeader>
+              <CardTitle className="text-destructive text-xl font-medium">
+                Failed to load — retry
+              </CardTitle>
+              <CardDescription>
+                {friendlyLoadError(loadError)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button type="button" onClick={() => void mutate()}>
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {isLoading ? (
+          <div className="space-y-6">
+            <p className="text-muted-foreground text-sm">Loading dashboard…</p>
+            <DashboardKpiSkeleton />
+            <DashboardSecondaryKpiSkeleton />
+            <DashboardChartSkeleton />
+            <DashboardTableSkeleton />
+          </div>
         ) : (
-          <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
-            Current snapshot
-          </p>
+          <>
+            {!mvpRaw && !loadError ? (
+              <Card className="border-dashed">
+                <CardHeader>
+                  <CardTitle className="text-xl font-medium">
+                    No report data yet
+                  </CardTitle>
+                  <CardDescription>
+                    Upload a licence file to generate your first MVP report and
+                    charts.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button type="button" asChild>
+                    <a href="#section-data-upload">Upload your first file</a>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {visibleSections.map((id) => renderSection(id))}
+          </>
         )}
-      </CardHeader>
-    </Card>
+      </div>
   );
 }

@@ -14,9 +14,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 
+import { CommandPalette } from "@/components/dashboard/command-palette";
+import { HelpDrawer } from "@/components/dashboard/help-drawer";
 import { RoleBadge } from "@/components/dashboard/role-badge";
 import { SystemStatus } from "@/components/dashboard/system-status";
 import { Button } from "@/components/ui/button";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDashboardHash } from "@/components/layout/use-dashboard-hash";
 import { parseUserRole, type Role } from "@/lib/roles";
 import { cn } from "@/lib/utils";
@@ -244,6 +247,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <SystemStatus />
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              <CommandPalette role={role} />
+              <HelpDrawer />
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/settings">Settings</Link>
+              </Button>
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/">Home</Link>
               </Button>
@@ -252,7 +260,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">{children}</main>
+        <TooltipProvider delayDuration={200}>
+          <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
+            {children}
+          </main>
+        </TooltipProvider>
       </div>
     </div>
   );

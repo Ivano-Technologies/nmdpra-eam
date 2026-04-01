@@ -55,6 +55,13 @@ export function ComplianceTermsGate({ children }: Props) {
       if (!res.ok) {
         throw new Error(body.error ?? "Could not save consent");
       }
+      await fetch("/api/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          onboardingSteps: { termsAccepted: true }
+        })
+      }).catch(() => undefined);
       setAccepted(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save consent");

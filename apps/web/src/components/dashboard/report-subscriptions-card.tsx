@@ -30,7 +30,13 @@ type SubRow = {
   lastSentAt?: number;
 };
 
-export function ReportSubscriptionsCard() {
+type ReportSubscriptionsCardProps = {
+  onSubscriptionSaved?: () => void | Promise<void>;
+};
+
+export function ReportSubscriptionsCard({
+  onSubscriptionSaved
+}: ReportSubscriptionsCardProps = {}) {
   const { getToken } = useAuth();
   const [rows, setRows] = useState<SubRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +101,7 @@ export function ReportSubscriptionsCard() {
       setOrgId("");
       setEmail("");
       await load();
+      await onSubscriptionSaved?.();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed");
     }

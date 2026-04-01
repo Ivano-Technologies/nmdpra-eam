@@ -65,6 +65,11 @@ export function ClientDashboardPlaceholder() {
               Contact administrator
             </a>
           </Button>
+          <Button variant="secondary" type="button" asChild>
+            <a href="/api/reports/mvp.pdf" target="_blank" rel="noreferrer">
+              View sample MVP PDF
+            </a>
+          </Button>
           <Button variant="outline" type="button" asChild>
             <Link href="/">Back to home</Link>
           </Button>

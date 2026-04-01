@@ -1,6 +1,36 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+function assertJobSecret(secret: string): void {
+  const expected = process.env.INTERNAL_JOB_SECRET;
+  if (!expected || secret !== expected) {
+    throw new Error("Unauthorized");
+  }
+}
+
+/** Compliance / API-sourced audit events (same table as owner audit). */
+export const appendCompliance = mutation({
+  args: {
+    secret: v.string(),
+    action: v.string(),
+    actorUserId: v.string(),
+    targetUserId: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+    orgId: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    assertJobSecret(args.secret);
+    await ctx.db.insert("auditLogs", {
+      action: args.action,
+      actorUserId: args.actorUserId,
+      targetUserId: args.targetUserId,
+      metadata: args.metadata,
+      createdAt: Date.now(),
+      ...(args.orgId !== undefined ? { orgId: args.orgId } : {})
+    });
+  }
+});
+
 export const append = mutation({
   args: {
     secret: v.string(),
