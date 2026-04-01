@@ -64,7 +64,7 @@ export function ExcelUploadCard({ onUploadSuccess }: ExcelUploadCardProps = {}) 
         if (!res.ok) {
           throw new Error(body.error ?? `Upload failed (${res.status})`);
         }
-        await fetch("/api/consent", {
+        await fetch("/api/user/consent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ scope: "upload" })

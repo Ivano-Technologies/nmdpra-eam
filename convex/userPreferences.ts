@@ -92,6 +92,23 @@ export const getForUser = query({
   }
 });
 
+/** Bounded scan for notification policy evaluation (cron / internal only). */
+export const listDigestForPolicy = query({
+  args: {
+    secret: v.string(),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    assertJobSecret(args.secret);
+    const lim = Math.min(500, Math.max(1, args.limit ?? 200));
+    const rows = await ctx.db.query("userPreferences").take(lim);
+    return rows.map((r) => ({
+      userId: r.userId,
+      digest: r.digest
+    }));
+  }
+});
+
 export const requestDeletion = mutation({
   args: {
     secret: v.string(),

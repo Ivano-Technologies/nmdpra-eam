@@ -4,6 +4,7 @@ import { Resend } from "resend";
 
 import { buildComplianceReportHtml } from "@/lib/compliance-report-email";
 import { verifyCronRequest } from "@/lib/cron-auth";
+import { shouldSendNotification } from "@/lib/notification-policy";
 import {
   listSubscriptionsQuery,
   mvpReportDataQuery,
@@ -50,6 +51,16 @@ async function handleSendReports(req: Request) {
     }
 
     try {
+      const policy = shouldSendNotification({
+        digest: undefined,
+        type: "scheduled_report",
+        timestampMs: now
+      });
+      if (!policy.allow) {
+        errors.push(`${sub.email}: policy:${policy.reason}`);
+        continue;
+      }
+
       const report = (await client.query(mvpReportDataQuery, {
         orgIdFilter: sub.orgId,
         includeUnscopedVendors: false

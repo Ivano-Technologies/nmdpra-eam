@@ -48,18 +48,13 @@ export async function POST() {
       secret: jobSecret,
       userId
     });
-    await client.mutation(dataExportsFinalizeMutation, {
-      secret: jobSecret,
-      userId,
-      exportId
-    });
 
     return NextResponse.json({
       ok: true,
       exportId,
-      status: "ready",
+      status: "pending",
       message:
-        "Placeholder export — replace finalizeExportStub with a real pipeline (Phase 3+)."
+        "Poll GET /api/user/export?id=… to run stub finalize and load ready payload."
     });
   } catch (e) {
     if (e instanceof AuthRoleError) {
@@ -92,7 +87,7 @@ export async function GET(req: Request) {
     }
 
     const client = new ConvexHttpClient(convexUrl);
-    const row = await client.query(dataExportsGetQuery, {
+    let row = await client.query(dataExportsGetQuery, {
       secret: jobSecret,
       userId,
       exportId: id
@@ -100,6 +95,22 @@ export async function GET(req: Request) {
 
     if (!row) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    if (row.status === "pending") {
+      await client.mutation(dataExportsFinalizeMutation, {
+        secret: jobSecret,
+        userId,
+        exportId: id
+      });
+      row = await client.query(dataExportsGetQuery, {
+        secret: jobSecret,
+        userId,
+        exportId: id
+      });
+      if (!row) {
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
     }
 
     return NextResponse.json({ ok: true, export: row });

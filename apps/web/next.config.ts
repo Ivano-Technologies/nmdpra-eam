@@ -22,10 +22,15 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://eam.techivano.com/api"
   },
   async rewrites() {
+    const consentLegacy = {
+      source: "/api/consent",
+      destination: "/api/user/consent"
+    };
     if (!backendApiOrigin) {
-      return [];
+      return [consentLegacy];
     }
     return [
+      consentLegacy,
       {
         source: "/api/reports/mvp.pdf",
         destination: `${backendApiOrigin}/api/reports/mvp.pdf`

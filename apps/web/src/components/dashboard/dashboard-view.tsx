@@ -215,33 +215,73 @@ function ExpiryBandLegend() {
   );
 }
 
+const goldGlow =
+  "drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]";
+
+const kpiToneClass: Record<
+  "gold" | "critical" | "warning" | "positive" | "neutral",
+  string
+> = {
+  gold: `text-brand-gold ${goldGlow}`,
+  critical: "text-red-400",
+  warning: "text-amber-400",
+  positive: "text-green-500",
+  neutral: "text-card-foreground"
+};
+
+const cardLift =
+  "transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/30";
+
 function KpiCard({
   label,
   value,
-  hint
+  hint,
+  tone = "gold",
+  delta
 }: {
   label: string;
   value: number | string;
   hint?: string;
+  tone?: keyof typeof kpiToneClass;
+  /** Optional period-over-period hint (wire when API provides deltas). */
+  delta?: { text: string; positive: boolean };
 }) {
+  const labelText = (
+    <span className="text-xs uppercase tracking-wide text-gray-400">{label}</span>
+  );
   const labelEl = hint ? (
     <Tooltip>
       <TooltipTrigger asChild>
-        <CardDescription className="cursor-help text-xs leading-snug">
-          {label}
-        </CardDescription>
+        <div className="cursor-help">{labelText}</div>
       </TooltipTrigger>
       <TooltipContent>{hint}</TooltipContent>
     </Tooltip>
   ) : (
-    <CardDescription className="text-xs leading-snug">{label}</CardDescription>
+    <div>{labelText}</div>
   );
   return (
-    <Card className="transition-shadow duration-150 hover:shadow-md">
-      <CardHeader className="pb-2">
+    <Card
+      className={`border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
+    >
+      <CardHeader className="space-y-1 pb-2">
         {labelEl}
-        <CardTitle className="text-3xl tabular-nums">{value}</CardTitle>
-        <p className="text-muted-foreground pt-1 text-[0.65rem] leading-tight">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <CardTitle
+            className={`font-heading text-3xl tabular-nums leading-tight ${kpiToneClass[tone]}`}
+          >
+            {value}
+          </CardTitle>
+          {delta ? (
+            <span
+              className={
+                delta.positive ? "text-xs text-green-400" : "text-xs text-red-400"
+              }
+            >
+              {delta.text}
+            </span>
+          ) : null}
+        </div>
+        <p className="text-[0.65rem] leading-tight text-muted-foreground">
           Current snapshot
         </p>
       </CardHeader>
@@ -265,9 +305,15 @@ function WeeklyInsightCard({
     return null;
   }
   return (
-    <Card className="border-border bg-muted/20">
+    <Card
+      className={`border border-white/5 bg-[#111827]/90 shadow-lg shadow-black/20 ${cardLift}`}
+    >
       <CardHeader className="py-3">
-        <CardTitle className="text-base font-medium">Weekly insight</CardTitle>
+        <CardTitle
+          className={`font-heading text-base font-medium text-brand-gold ${goldGlow}`}
+        >
+          Weekly insight
+        </CardTitle>
         <CardDescription className="text-sm">{line}</CardDescription>
       </CardHeader>
     </Card>
@@ -607,7 +653,13 @@ export function DashboardView() {
             id="section-overview"
             className="scroll-mt-28 space-y-6"
           >
+            <h2
+              className={`font-heading text-lg text-[#D4AF37] ${goldGlow} mb-2`}
+            >
+              Risk overview
+            </h2>
             <RiskInsightBanner mvp={displayMvp} />
+            <div className="space-y-6 rounded-xl border border-white/5 bg-[#111827]/80 p-6 shadow-lg shadow-black/20">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <KpiCard
                 label="Total licences"
@@ -635,29 +687,34 @@ export function DashboardView() {
                 label="Critical (≤30 days)"
                 value={displayMvp.summary.critical}
                 hint="Secondary KPI"
+                tone="critical"
               />
               <KpiCard
                 label="Warning (31–60 days)"
                 value={displayMvp.summary.warning}
                 hint="Secondary KPI"
+                tone="warning"
               />
               <KpiCard
                 label="Safe (&gt;60 days)"
                 value={displayMvp.summary.safe}
                 hint="Secondary KPI"
+                tone="positive"
               />
               <KpiCard
                 label="Vendors"
                 value={vendorCount}
                 hint="Distinct vendors in filtered report"
+                tone="gold"
               />
             </div>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-muted-foreground">
               <span className="text-foreground font-medium">Coverage: </span>
               {displayMvp.summary.total} licence
               {displayMvp.summary.total === 1 ? "" : "s"} across {vendorCount}{" "}
               vendor{vendorCount === 1 ? "" : "s"}
             </p>
+            </div>
           </section>
         );
       case "expiry-radar":
@@ -668,11 +725,15 @@ export function DashboardView() {
           <Card
             key="expiry-radar"
             id="section-expiry-radar"
-            className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+            className={`scroll-mt-28 border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
           >
             <CardHeader className="space-y-3">
               <div>
-                <CardTitle className="text-xl font-medium">Expiry radar</CardTitle>
+                <CardTitle
+                  className={`font-heading text-xl font-medium text-brand-gold ${goldGlow}`}
+                >
+                  Expiry radar
+                </CardTitle>
                 <CardDescription>
                   Licence rows by expiry band (filtered dataset).
                 </CardDescription>
@@ -702,7 +763,7 @@ export function DashboardView() {
                     />
                     <Bar
                       dataKey="value"
-                      fill="#64748b"
+                      fill="#22c55e"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -716,10 +777,14 @@ export function DashboardView() {
           <Card
             key="risk-ranking"
             id="section-risk-ranking"
-            className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+            className={`scroll-mt-28 border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
           >
             <CardHeader>
-              <CardTitle className="text-xl font-medium">Risk ranking</CardTitle>
+              <CardTitle
+                className={`font-heading text-xl font-medium text-brand-gold ${goldGlow}`}
+              >
+                Risk ranking
+              </CardTitle>
               <CardDescription>
                 Vendors sorted by risk score (highest first); filtered by saved
                 view.
@@ -776,10 +841,14 @@ export function DashboardView() {
           <Card
             key="reports"
             id="section-reports"
-            className="scroll-mt-28 transition-shadow duration-150 hover:shadow-md"
+            className={`scroll-mt-28 border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
           >
             <CardHeader>
-              <CardTitle className="text-xl font-medium">Reports</CardTitle>
+              <CardTitle
+                className={`font-heading text-xl font-medium text-brand-gold ${goldGlow}`}
+              >
+                Reports
+              </CardTitle>
               <CardDescription>
                 Download PDF or email the current MVP report.
               </CardDescription>
@@ -980,7 +1049,9 @@ export function DashboardView() {
               </Card>
             ) : null}
 
-            {visibleSections.map((id) => renderSection(id))}
+            <div className="space-y-6">
+              {visibleSections.map((id) => renderSection(id))}
+            </div>
           </>
         )}
       </div>

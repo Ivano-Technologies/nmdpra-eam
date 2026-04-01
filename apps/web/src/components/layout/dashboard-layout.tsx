@@ -26,11 +26,11 @@ import { cn } from "@/lib/utils";
 
 const navClass = cn(
   "flex w-full items-center justify-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150",
-  "text-neutral-600 hover:bg-neutral-100 hover:text-foreground dark:text-neutral-400 dark:hover:bg-neutral-800"
+  "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
 );
 
 const navActiveClass = cn(
-  "bg-neutral-100 font-medium text-foreground dark:bg-neutral-800"
+  "bg-[#166534] font-medium text-white shadow-sm"
 );
 
 type NavItem = {
@@ -157,7 +157,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const mainOffset = desktopCollapsed ? "md:pl-[4.5rem]" : "md:pl-56";
 
   return (
-    <div className="bg-background flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#0F172A] to-[#020617] md:flex-row">
       {mobileOpen ? (
         <button
           type="button"
@@ -169,7 +169,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "border-border bg-card z-50 flex-col border-r shadow-sm transition-[width] duration-200",
+          "z-50 flex-col border-r border-white/5 bg-[#0F172A]/80 shadow-lg shadow-black/20 backdrop-blur-md transition-[width] duration-200",
           "md:fixed md:inset-y-0 md:left-0 md:z-30",
           sidebarWidth,
           mobileOpen
@@ -177,10 +177,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             : "hidden md:flex"
         )}
       >
-        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3 md:h-16">
+        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/5 px-3 md:h-16">
           <Link
             href="/dashboard"
-            className="text-foreground truncate text-sm font-semibold tracking-tight"
+            className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground"
             onClick={closeMobile}
           >
             {!desktopCollapsed ? "RMLIS" : "R"}
@@ -220,11 +220,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <div
         className={cn(
-          "flex min-w-0 flex-1 flex-col",
+          "flex min-w-0 flex-1 flex-col bg-gradient-to-b from-[#0F172A] to-[#020617]",
           mainOffset
         )}
       >
-        <div className="border-border flex h-14 items-center gap-2 border-b px-4 md:hidden">
+        <div className="flex h-14 items-center gap-2 border-b border-white/5 px-4 md:hidden">
           <Button
             type="button"
             variant="outline"
@@ -235,9 +235,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Menu className="size-4" aria-hidden />
             <span className="ml-1">Menu</span>
           </Button>
-          <span className="text-sm font-semibold">RMLIS</span>
+          <span className="text-sm font-semibold text-sidebar-foreground">RMLIS</span>
         </div>
-        <header className="border-border bg-card/80 supports-[backdrop-filter]:bg-card/60 sticky top-0 z-20 border-b backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-white/5 bg-gradient-to-b from-[#111827]/95 to-[#0f172a]/90 backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
             <div className="min-w-0 flex flex-wrap items-center gap-2">
               <span className="text-muted-foreground hidden text-sm md:inline">

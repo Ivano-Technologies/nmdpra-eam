@@ -53,6 +53,10 @@ export const userPreferencesGetQuery = makeFunctionReference<"query">(
   "userPreferences:getForUser"
 );
 
+export const userPreferencesListDigestForPolicyQuery = makeFunctionReference<"query">(
+  "userPreferences:listDigestForPolicy"
+);
+
 export const userPreferencesUpsertMutation = makeFunctionReference<"mutation">(
   "userPreferences:upsertPatch"
 );

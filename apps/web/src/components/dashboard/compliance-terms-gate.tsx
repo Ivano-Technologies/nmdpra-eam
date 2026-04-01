@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-
 type Props = {
   children: React.ReactNode;
 };
@@ -21,7 +19,9 @@ export function ComplianceTermsGate({ children }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/consent?scope=terms", { cache: "no-store" });
+      const res = await fetch("/api/user/consent?scope=terms", {
+        cache: "no-store"
+      });
       const body = (await res.json().catch(() => ({}))) as {
         accepted?: boolean;
         error?: string;
@@ -46,7 +46,7 @@ export function ComplianceTermsGate({ children }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/consent", {
+      const res = await fetch("/api/user/consent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scope: "terms" })
@@ -72,8 +72,9 @@ export function ComplianceTermsGate({ children }: Props) {
 
   if (loading) {
     return (
-      <div className="text-muted-foreground flex min-h-[40vh] items-center justify-center text-sm">
-        Loading…
+      <div className="fixed inset-0 z-50 flex min-h-[40vh] flex-col items-center justify-center gap-4 bg-black/60 px-4">
+        <div className="h-24 w-full max-w-md animate-pulse rounded-lg bg-white/5 shadow-lg shadow-black/20" />
+        <p className="text-sm text-text-secondary">Loading…</p>
       </div>
     );
   }
@@ -81,41 +82,49 @@ export function ComplianceTermsGate({ children }: Props) {
   if (!accepted) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         role="dialog"
         aria-modal="true"
         aria-labelledby="terms-gate-title"
         aria-describedby="terms-gate-desc"
       >
-        <div className="bg-background border-border max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border p-6 shadow-lg">
-          <h2 id="terms-gate-title" className="text-lg font-semibold">
-            Data usage
+        <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-white/10 bg-bg-primary p-8 text-text-primary shadow-lg shadow-black/30">
+          <h2
+            id="terms-gate-title"
+            className="font-heading mb-4 text-2xl text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]"
+          >
+            Data Usage &amp; Compliance
           </h2>
-          <p id="terms-gate-desc" className="text-muted-foreground mt-3 text-sm leading-relaxed">
+          <p
+            id="terms-gate-desc"
+            className="text-sm leading-relaxed text-gray-300"
+          >
             By continuing, you acknowledge that compliance and licence data you or
             your organization submit may be stored and processed in this
             application for regulatory monitoring purposes. Organization owners may
             delete organization data from the Owner workspace. This notice is not
             legal advice; review your{" "}
-            <a href="/data-policy" className="text-primary underline-offset-2 hover:underline">
+            <a
+              href="/data-policy"
+              className="text-brand-gold underline-offset-2 hover:underline"
+            >
               data policy (draft)
             </a>
             .
           </p>
           {error ? (
-            <p className="text-destructive mt-3 text-sm" role="alert">
+            <p className="mt-3 text-sm text-red-400" role="alert">
               {error}
             </p>
           ) : null}
-          <div className="mt-6 flex justify-end gap-2">
-            <Button
-              type="button"
-              onClick={() => void onAccept()}
-              disabled={submitting}
-            >
-              {submitting ? "Saving…" : "Accept and continue"}
-            </Button>
-          </div>
+          <button
+            type="button"
+            className="mt-6 rounded-lg bg-brand-gold px-5 py-2 font-semibold text-black transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22c55e]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F172A] disabled:opacity-60"
+            onClick={() => void onAccept()}
+            disabled={submitting}
+          >
+            {submitting ? "Saving…" : "Accept and continue"}
+          </button>
         </div>
       </div>
     );
