@@ -1,12 +1,13 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Home", () => {
-  test("shows hero and pilot label", async ({ page }) => {
+  test("shows hero title and tagline", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Stay Ahead of Regulatory Risk"
-    );
-    await expect(page.getByText("Pilot / demonstration")).toBeVisible();
+    const hero = page.locator("main > section").first();
+    await expect(hero.getByRole("heading", { level: 1 })).toHaveText("Techivano EAM");
+    await expect(
+      hero.getByText("Operational Intelligence for National Infrastructure")
+    ).toBeVisible();
   });
 
   test("shows trust strip and product sections", async ({ page }) => {
