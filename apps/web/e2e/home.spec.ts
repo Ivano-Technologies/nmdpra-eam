@@ -4,9 +4,7 @@ test.describe("Home", () => {
   test("shows hero headline", async ({ page }) => {
     await page.goto("/");
     const hero = page.locator("main > section").first();
-    await expect(hero.getByRole("heading", { level: 1 })).toHaveText(
-      "Ivano IQ - Operational Intelligence for Enterprise Infrastructure"
-    );
+    await expect(hero.getByRole("heading", { level: 1 })).toHaveText("IVANO IQ");
   });
 
   test("shows trust strip and product sections", async ({ page }) => {

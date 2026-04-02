@@ -26,7 +26,7 @@ const features = [
 
 export function LandingFeatures() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
+    <section id="platform" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-20">
       <div className="grid gap-6 md:grid-cols-3">
         {features.map(({ title, description, icon: Icon }) => (
           <div

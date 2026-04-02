@@ -1,4 +1,4 @@
-@import url("https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,600,700&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -8,11 +8,15 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Body / UI: Satoshi → Inter → system */
+  /* Body / UI + dashboard: Satoshi → Inter → system */
   --font-sans: "Satoshi", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  /* Headings: Clash Display → Inter → system */
-  --font-heading: "Clash Display", var(--font-inter), ui-sans-serif, sans-serif;
+  /*
+    Brand ID: Ceoruse; headings: Gonero. Self-host /fonts/Ceoruse.woff2 & Gonero.woff2 with @font-face to activate.
+    Until then, Playfair Display (--font-playfair) and Space Grotesk (--font-space) from next/font supply the fallbacks.
+  */
+  --font-brand: "Ceoruse", var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
+  --font-heading: "Gonero", var(--font-space), var(--font-inter), ui-sans-serif, sans-serif;
   --font-body-alt: "Satoshi", var(--font-inter), ui-sans-serif, sans-serif;
   --color-brand-green: var(--brand-green-700);
   --color-brand-gold: var(--brand-gold-500);
@@ -119,7 +123,8 @@
 
 .dark {
   color-scheme: dark;
-  --background: #000000;
+  --background: #232323;
+  --bg-primary: #232323;
   --foreground: #f5f5f5;
   --card: #14100d;
   --card-foreground: #f5f5f5;
@@ -155,6 +160,50 @@
 /*
   Modern dark shell: layered radial “mesh” + diagonal wash (gold/bronze hints, luxury palette).
 */
+@layer components {
+  /* Bold, responsive 3D “floating” CTAs (hero + landing strips) */
+  .landing-cta-3d {
+    @apply relative touch-manipulation rounded-xl border-0 font-bold transition-[transform,box-shadow] duration-200 ease-out;
+    transform: translateY(0);
+    box-shadow:
+      0 4px 0 0 rgb(0 0 0 / 0.5),
+      0 10px 24px rgb(0 0 0 / 0.22),
+      inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+  .landing-cta-3d:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 7px 0 0 rgb(0 0 0 / 0.45),
+      0 16px 32px rgb(0 0 0 / 0.28),
+      inset 0 1px 0 rgb(255 255 255 / 0.18);
+  }
+  .landing-cta-3d:active {
+    transform: translateY(2px);
+    box-shadow:
+      0 1px 0 0 rgb(0 0 0 / 0.55),
+      0 4px 12px rgb(0 0 0 / 0.2),
+      inset 0 2px 6px rgb(0 0 0 / 0.2);
+  }
+  .dark .landing-cta-3d {
+    box-shadow:
+      0 4px 0 0 rgb(0 0 0 / 0.65),
+      0 10px 28px rgb(222 175 95 / 0.28),
+      inset 0 1px 0 rgb(255 255 255 / 0.22);
+  }
+  .dark .landing-cta-3d:hover {
+    box-shadow:
+      0 7px 0 0 rgb(0 0 0 / 0.55),
+      0 18px 36px rgb(222 175 95 / 0.35),
+      inset 0 1px 0 rgb(255 255 255 / 0.28);
+  }
+  .dark .landing-cta-3d:active {
+    box-shadow:
+      0 1px 0 0 rgb(0 0 0 / 0.7),
+      0 4px 14px rgb(0 0 0 / 0.35),
+      inset 0 2px 6px rgb(0 0 0 / 0.25);
+  }
+}
+
 @layer utilities {
   .bg-app-mesh {
     background-color: #fafafa;
@@ -166,13 +215,13 @@
   }
 
   .dark .bg-app-mesh {
-    background-color: #030201;
+    background-color: #232323;
     background-image:
       radial-gradient(ellipse 115% 90% at 50% -35%, rgba(222, 175, 95, 0.14), transparent 58%),
       radial-gradient(ellipse 85% 55% at 100% 0%, rgba(179, 124, 75, 0.1), transparent 52%),
       radial-gradient(ellipse 75% 60% at 0% 100%, rgba(75, 50, 36, 0.28), transparent 56%),
       radial-gradient(ellipse 55% 45% at 85% 92%, rgba(222, 175, 95, 0.05), transparent 52%),
-      linear-gradient(168deg, #0c0a09 0%, #040302 42%, #000000 78%, #080706 100%);
+      linear-gradient(168deg, #2e2c2a 0%, #262422 42%, #232323 78%, #252321 100%);
   }
 
   .bg-app-header-glass {
@@ -212,13 +261,13 @@
   }
   /* Mesh gradient for dark theme */
   .dark body {
-    background-color: #030201;
+    background-color: #232323;
     background-image:
       radial-gradient(ellipse 115% 90% at 50% -35%, rgba(222, 175, 95, 0.14), transparent 58%),
       radial-gradient(ellipse 85% 55% at 100% 0%, rgba(179, 124, 75, 0.1), transparent 52%),
       radial-gradient(ellipse 75% 60% at 0% 100%, rgba(75, 50, 36, 0.28), transparent 56%),
       radial-gradient(ellipse 55% 45% at 85% 92%, rgba(222, 175, 95, 0.05), transparent 52%),
-      linear-gradient(168deg, #0c0a09 0%, #040302 42%, #000000 78%, #080706 100%);
+      linear-gradient(168deg, #2e2c2a 0%, #262422 42%, #232323 78%, #252321 100%);
   }
   html {
     @apply font-sans;

@@ -1,6 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { Geist_Mono, Inter, Playfair_Display, Space_Grotesk } from "next/font/google";
 
 import { Toaster } from "sonner";
 
@@ -18,6 +18,20 @@ const inter = Inter({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"]
+});
+
+/** Web fallback for brand font Ceoruse (see globals.css --font-brand). */
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  weight: ["400", "600", "700"]
+});
+
+/** Web fallback for heading font Gonero (see globals.css --font-heading). */
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  weight: ["500", "600", "700"]
 });
 
 export const metadata: Metadata = {
@@ -60,7 +74,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${playfair.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="font-sans flex min-h-full flex-col">
         <ThemeProvider>

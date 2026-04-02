@@ -10,7 +10,7 @@ test.describe("Post-deploy smoke", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: "Ivano IQ - Operational Intelligence for Enterprise Infrastructure"
+        name: "IVANO IQ"
       })
     ).toBeVisible({ timeout: 60_000 });
     await expect(page.locator("footer").getByText("Powered by Techivano")).toBeVisible();
