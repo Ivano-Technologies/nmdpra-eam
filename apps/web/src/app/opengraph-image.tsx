@@ -1,3 +1,6 @@
+import { readFile } from "fs/promises";
+import { join } from "path";
+
 import { ImageResponse } from "next/og";
 
 import { BRAND_NAME, BRAND_TAGLINE, PRODUCT_NAME } from "@/lib/brand";
@@ -14,10 +17,13 @@ export const size = {
 export const contentType = "image/png";
 
 /**
- * 1200×630 social preview — dark canvas, gold headline, faux dashboard panel.
- * Optional: add `public/og/dashboard-preview.png` and extend this route to embed it (base64 data URL).
+ * 1200×630 social preview — dark canvas, official mark, gold headline, faux dashboard panel.
  */
-export default function OpenGraphImage() {
+export default async function OpenGraphImage() {
+  const markPath = join(process.cwd(), "public", "brand", "techivano-mark.png");
+  const markBuf = await readFile(markPath);
+  const markDataUrl = `data:image/png;base64,${markBuf.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -40,23 +46,17 @@ export default function OpenGraphImage() {
             marginBottom: 36
           }}
         >
-          <div
+          {/* eslint-disable-next-line @next/next/no-img-element -- OG image pipeline */}
+          <img
+            src={markDataUrl}
+            width={56}
+            height={56}
+            alt=""
             style={{
-              width: 56,
-              height: 56,
               borderRadius: 12,
-              background: "#0a192f",
-              border: "2px solid #D4AF37",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#D4AF37",
-              fontSize: 22,
-              fontWeight: 700
+              objectFit: "contain"
             }}
-          >
-            T
-          </div>
+          />
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ color: "#ffffff", fontSize: 28, fontWeight: 700 }}>{BRAND_NAME}</span>
             <span style={{ color: "#94a3b8", fontSize: 14 }}>{BRAND_TAGLINE}</span>

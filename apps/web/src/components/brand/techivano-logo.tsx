@@ -109,7 +109,7 @@ export function TechivanoLogo({
             markVariant={markVariant}
             motion={markMotion}
           />
-          <span className={cn("font-heading font-semibold tracking-tight text-white", s.name)}>
+          <span className={cn("font-heading font-semibold tracking-tight text-foreground", s.name)}>
             {BRAND_INITIAL}.
           </span>
         </span>
@@ -126,14 +126,14 @@ export function TechivanoLogo({
             motion={markMotion}
           />
           <span className="flex min-w-0 flex-col text-left leading-tight">
-            <span className={cn("font-heading font-semibold tracking-tight text-white", s.name)}>
+            <span className={cn("font-heading font-semibold tracking-tight text-foreground", s.name)}>
               <span className="md:hidden">{BRAND_INITIAL}.</span>
               <span className="hidden md:inline">{label}</span>
             </span>
             {showTagline ? (
               <span
                 className={cn(
-                  "text-slate-400 hidden max-w-[14rem] truncate md:block sm:max-w-none sm:whitespace-normal",
+                  "text-muted-foreground hidden max-w-[14rem] truncate md:block sm:max-w-none sm:whitespace-normal",
                   s.tagline,
                   taglineClassName
                 )}
@@ -155,13 +155,13 @@ export function TechivanoLogo({
           motion={markMotion}
         />
         <span className="flex min-w-0 flex-col text-left leading-tight">
-          <span className={cn("font-heading font-semibold tracking-tight text-white", s.name)}>
+          <span className={cn("font-heading font-semibold tracking-tight text-foreground", s.name)}>
             {label}
           </span>
           {showTagline ? (
             <span
               className={cn(
-                "text-slate-400 max-w-[14rem] truncate sm:max-w-none sm:whitespace-normal",
+                "text-muted-foreground max-w-[14rem] truncate sm:max-w-none sm:whitespace-normal",
                 s.tagline,
                 taglineClassName
               )}

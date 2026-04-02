@@ -8,7 +8,7 @@ export function DashboardCommandBar() {
   const { setOpen } = useCommandPalette();
 
   return (
-    <div className="mb-6 rounded-xl border border-white/5 bg-[#14100d] p-3 shadow-lg shadow-black/20">
+    <div className="border-border bg-card mb-6 rounded-xl border p-3 shadow-lg shadow-black/10 dark:shadow-black/20">
       <div className="flex items-center gap-3 px-1">
         <Search className="text-muted-foreground size-4 shrink-0" aria-hidden />
         <button

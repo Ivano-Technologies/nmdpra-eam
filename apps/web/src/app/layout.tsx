@@ -4,6 +4,7 @@ import { Geist_Mono, Inter, Montserrat, Open_Sans } from "next/font/google";
 
 import { Toaster } from "sonner";
 
+import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BRAND_DESCRIPTION, BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 
@@ -43,7 +44,7 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.ico", sizes: "48x48" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/brand/techivano-mark.svg", type: "image/svg+xml" }
+      { url: "/brand/techivano-mark.png", sizes: "any", type: "image/png" }
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
   },
@@ -68,15 +69,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${inter.variable} ${openSans.variable} ${montserrat.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${inter.variable} ${openSans.variable} ${montserrat.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="font-sans min-h-full flex flex-col">
-        <ClerkProvider>
-          <TooltipProvider delayDuration={200}>
-            {children}
-            <Toaster richColors position="top-right" closeButton />
-          </TooltipProvider>
-        </ClerkProvider>
+      <body className="font-sans flex min-h-full flex-col">
+        <ThemeProvider>
+          <ClerkProvider>
+            <TooltipProvider delayDuration={200}>
+              {children}
+              <Toaster richColors position="top-right" closeButton />
+            </TooltipProvider>
+          </ClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -9,8 +9,8 @@ type PoweredByTechivanoProps = {
 
 const variantClass: Record<NonNullable<PoweredByTechivanoProps["variant"]>, string> = {
   dark: "text-zinc-900",
-  light: "text-white",
-  muted: "text-zinc-500"
+  light: "text-foreground",
+  muted: "text-muted-foreground"
 };
 
 /**

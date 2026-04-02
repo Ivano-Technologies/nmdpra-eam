@@ -59,9 +59,9 @@
 /*
   Luxury dark palette (reference):
   Paper #F5F5F5, Gold #DEAF5F, Bronze #B37C4B, Espresso #4B3224, Black #000000
-  Optional light container: Cream #E8E0D5
 */
 :root {
+  color-scheme: light;
   --lux-paper: #f5f5f5;
   --lux-gold: #deaf5f;
   --lux-gold-bright: #e8c878;
@@ -75,45 +75,47 @@
   --brand-green-500: #deaf5f;
   --brand-gold-500: #deaf5f;
   --brand-gold-400: #e8c878;
+  /* Light shell: white, cool grey, warm taupe, charcoal, black CTA */
   --bg-primary: #000000;
-  --bg-secondary: #1a1410;
-  --text-primary: #f5f5f5;
-  --text-secondary: #a89f98;
-  --background: var(--lux-cream);
-  --foreground: #1c1816;
-  --card: #faf8f5;
-  --card-foreground: #1c1816;
-  --popover: #faf8f5;
-  --popover-foreground: #1c1816;
-  --primary: #deaf5f;
-  --primary-foreground: #000000;
-  --secondary: #e8e0d5;
-  --secondary-foreground: #1c1816;
-  --muted: #ebe6df;
-  --muted-foreground: #5c534c;
-  --accent: #b37c4b;
-  --accent-foreground: #f5f5f5;
+  --bg-secondary: #f4f4f5;
+  --text-primary: #1c1917;
+  --text-secondary: #78716c;
+  --background: #ffffff;
+  --foreground: #1c1917;
+  --card: #f4f4f5;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #1c1917;
+  --muted: #f4f4f5;
+  --muted-foreground: #78716c;
+  --accent: #e7e5e4;
+  --accent-foreground: #1c1917;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #d4ccc2;
-  --input: #ebe6df;
-  --ring: #deaf5f;
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #1c1917;
   --chart-1: #deaf5f;
   --chart-2: #b37c4b;
   --chart-3: #8f6239;
   --chart-4: #4b3224;
-  --chart-5: #6b5c54;
+  --chart-5: #78716c;
   --radius: 0.625rem;
-  --sidebar: #f0ebe4;
-  --sidebar-foreground: #1c1816;
-  --sidebar-primary: #b37c4b;
-  --sidebar-primary-foreground: #f5f5f5;
-  --sidebar-accent: #e8e0d5;
-  --sidebar-accent-foreground: #1c1816;
-  --sidebar-border: #d4ccc2;
-  --sidebar-ring: #deaf5f;
+  --sidebar: #f4f4f5;
+  --sidebar-foreground: #1c1917;
+  --sidebar-primary: #000000;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebebeb;
+  --sidebar-accent-foreground: #1c1917;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #1c1917;
 }
 
 .dark {
+  color-scheme: dark;
   --background: #000000;
   --foreground: #f5f5f5;
   --card: #14100d;
@@ -147,12 +149,73 @@
   --sidebar-ring: #deaf5f;
 }
 
+/*
+  Modern dark shell: layered radial “mesh” + diagonal wash (gold/bronze hints, luxury palette).
+*/
+@layer utilities {
+  .bg-app-mesh {
+    background-color: #fafafa;
+    background-image:
+      radial-gradient(ellipse 120% 90% at 50% -30%, rgba(0, 0, 0, 0.04), transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% 0%, rgba(0, 0, 0, 0.03), transparent 50%),
+      radial-gradient(ellipse 70% 55% at 0% 100%, rgba(0, 0, 0, 0.035), transparent 54%),
+      linear-gradient(168deg, #ffffff 0%, #f7f7f8 45%, #f0f0f2 100%);
+  }
+
+  .dark .bg-app-mesh {
+    background-color: #030201;
+    background-image:
+      radial-gradient(ellipse 115% 90% at 50% -35%, rgba(222, 175, 95, 0.14), transparent 58%),
+      radial-gradient(ellipse 85% 55% at 100% 0%, rgba(179, 124, 75, 0.1), transparent 52%),
+      radial-gradient(ellipse 75% 60% at 0% 100%, rgba(75, 50, 36, 0.28), transparent 56%),
+      radial-gradient(ellipse 55% 45% at 85% 92%, rgba(222, 175, 95, 0.05), transparent 52%),
+      linear-gradient(168deg, #0c0a09 0%, #040302 42%, #000000 78%, #080706 100%);
+  }
+
+  .bg-app-header-glass {
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(245, 245, 246, 0.78) 55%,
+      rgba(255, 255, 255, 0.5) 100%
+    );
+  }
+
+  .dark .bg-app-header-glass {
+    background-image: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(8, 7, 6, 0.45) 55%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply min-h-full text-foreground;
+  }
+  /* Light shell: soft white → cool grey (minimal / Veloretti-style) */
+  html.light body {
+    background-color: #fafafa;
+    background-image:
+      radial-gradient(ellipse 120% 90% at 50% -30%, rgba(0, 0, 0, 0.04), transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% 0%, rgba(0, 0, 0, 0.03), transparent 50%),
+      radial-gradient(ellipse 70% 55% at 0% 100%, rgba(0, 0, 0, 0.035), transparent 54%),
+      linear-gradient(168deg, #ffffff 0%, #f7f7f8 45%, #f0f0f2 100%);
+  }
+  /* Mesh gradient for dark theme */
+  .dark body {
+    background-color: #030201;
+    background-image:
+      radial-gradient(ellipse 115% 90% at 50% -35%, rgba(222, 175, 95, 0.14), transparent 58%),
+      radial-gradient(ellipse 85% 55% at 100% 0%, rgba(179, 124, 75, 0.1), transparent 52%),
+      radial-gradient(ellipse 75% 60% at 0% 100%, rgba(75, 50, 36, 0.28), transparent 56%),
+      radial-gradient(ellipse 55% 45% at 85% 92%, rgba(222, 175, 95, 0.05), transparent 52%),
+      linear-gradient(168deg, #0c0a09 0%, #040302 42%, #000000 78%, #080706 100%);
   }
   html {
     @apply font-sans;

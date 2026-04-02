@@ -162,11 +162,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <CommandPaletteProvider>
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-black to-[#14100d] md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row">
       {mobileOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          className="bg-foreground/25 fixed inset-0 z-40 backdrop-blur-[2px] md:hidden"
           aria-label="Close menu"
           onClick={closeMobile}
         />
@@ -174,7 +174,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "z-50 flex-col border-r border-white/5 bg-[#0a0807]/80 shadow-lg shadow-black/20 backdrop-blur-md transition-[width] duration-200",
+          "border-sidebar-border bg-sidebar/90 z-50 flex-col border-r shadow-lg shadow-black/10 backdrop-blur-xl transition-[width] duration-200 dark:shadow-black/25",
           "md:fixed md:inset-y-0 md:left-0 md:z-30",
           sidebarWidth,
           mobileOpen
@@ -182,7 +182,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             : "hidden md:flex"
         )}
       >
-        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/5 px-3 md:h-16">
+        <div className="border-sidebar-border flex h-14 shrink-0 items-center justify-between gap-2 border-b px-3 md:h-16">
           {!desktopCollapsed ? (
             <TechivanoLogo
               href="/dashboard"
@@ -237,12 +237,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div
-        className={cn(
-          "flex min-w-0 flex-1 flex-col bg-gradient-to-b from-black to-[#14100d]",
-          mainOffset
-        )}
+        className={cn("flex min-w-0 flex-1 flex-col", mainOffset)}
       >
-        <div className="flex h-14 items-center gap-2 border-b border-white/5 px-4 md:hidden">
+        <div className="border-sidebar-border flex h-14 items-center gap-2 border-b px-4 md:hidden">
           <Button
             type="button"
             variant="outline"
@@ -264,7 +261,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             className="min-w-0"
           />
         </div>
-        <header className="sticky top-0 z-20 border-b border-white/5 bg-gradient-to-b from-black/95 to-[#0a0807]/90 backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md">
+        <header className="bg-app-header-glass border-border sticky top-0 z-20 border-b backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
             <div className="min-w-0 flex flex-wrap items-center gap-2">
               <span className="text-muted-foreground hidden text-sm font-medium md:inline">

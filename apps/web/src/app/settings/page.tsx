@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { DangerZone } from "@/components/settings/danger-zone";
+import { ThemeSettings } from "@/components/settings/theme-settings";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 export default async function SettingsPage() {
@@ -19,6 +20,7 @@ export default async function SettingsPage() {
             Privacy, data lifecycle, and account-related actions.
           </p>
         </div>
+        <ThemeSettings />
         <DangerZone />
       </div>
     </DashboardLayout>

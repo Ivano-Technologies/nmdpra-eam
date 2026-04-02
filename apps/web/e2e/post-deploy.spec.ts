@@ -16,8 +16,11 @@ test.describe("Post-deploy smoke", () => {
     const fav = await request.get("/favicon.ico");
     expect([200, 304]).toContain(fav.status());
 
-    const icon = await request.get("/icon.svg");
+    const icon = await request.get("/icon.png");
     expect([200, 304]).toContain(icon.status());
+
+    const brandMark = await request.get("/brand/techivano-mark.png");
+    expect([200, 304]).toContain(brandMark.status());
 
     const og = await request.get("/opengraph-image");
     expect([200, 304]).toContain(og.status());

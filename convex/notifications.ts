@@ -38,10 +38,12 @@ export const listForUser = query({
   handler: async (ctx, args) => {
     assertJobSecret(args.secret);
     const lim = Math.min(50, Math.max(1, args.limit ?? 20));
+    /** Cap fetch size; unread count is exact only when total notifications ≤ this cap. */
+    const MAX_NOTIFICATIONS_FETCH = 500;
     const rows = await ctx.db
       .query("notifications")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .collect();
+      .take(MAX_NOTIFICATIONS_FETCH);
     const sorted = rows.sort((a, b) => b.createdAt - a.createdAt).slice(0, lim);
     const unreadCount = rows.filter((r) => !r.read).length;
     return { notifications: sorted, unreadCount };

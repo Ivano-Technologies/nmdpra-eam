@@ -19,7 +19,7 @@ const audiences = [
 ] as const;
 
 const cardClass =
-  "rounded-xl border border-white/5 bg-gradient-to-b from-[#1a1410]/95 to-black/90 p-6 shadow-lg shadow-black/25 transition duration-200 hover:scale-[1.02] hover:border-[#deaf5f]/20 hover:shadow-xl";
+  "rounded-xl border border-border bg-gradient-to-b from-card to-muted/90 p-6 shadow-lg shadow-black/10 transition duration-200 hover:scale-[1.02] hover:border-brand-gold/25 hover:shadow-xl dark:from-card dark:to-muted/50 dark:shadow-black/25";
 
 export function LandingWhoItsFor() {
   return (
@@ -34,7 +34,7 @@ export function LandingWhoItsFor() {
         {audiences.map(({ title, body, icon: Icon }) => (
           <div key={title} className={cardClass}>
             <Icon className="mb-4 size-9 text-brand-gold/90" aria-hidden />
-            <h3 className="font-heading text-lg font-medium text-white">{title}</h3>
+            <h3 className="font-heading text-foreground text-lg font-medium">{title}</h3>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{body}</p>
           </div>
         ))}

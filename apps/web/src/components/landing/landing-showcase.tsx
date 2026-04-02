@@ -87,13 +87,13 @@ function ShowcaseRow({ item }: { item: ShowcaseItem }) {
         )}
         style={{ transitionDelay: visible ? "80ms" : "0ms" }}
       >
-        <div className="rounded-xl border border-white/10 bg-black p-2 shadow-2xl shadow-black/40">
+        <div className="border-border bg-foreground/95 rounded-xl border p-2 shadow-2xl shadow-black/25 dark:bg-black dark:shadow-black/40">
           <div className="flex gap-2 px-2 pb-2 pt-1" aria-hidden>
             <span className="size-2 rounded-full bg-red-500" />
             <span className="size-2 rounded-full bg-yellow-500" />
             <span className="size-2 rounded-full bg-[#deaf5f]" />
           </div>
-          <div className="rounded-lg bg-[#14100d] p-2">
+          <div className="bg-card rounded-lg p-2">
             <Image
               src={item.src}
               alt={item.alt}

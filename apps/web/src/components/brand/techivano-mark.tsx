@@ -1,15 +1,11 @@
-import type { SVGProps } from "react";
+import type { ImgHTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-const MARK_SRC_DEFAULT = "/brand/techivano-mark.svg";
+/** Official raster mark (navy + green + white) — also used for favicons */
+export const TECHIVANO_MARK_PNG = "/brand/techivano-mark.png";
 
-const ACCENT = {
-  default: { primary: "#22c55e", node: "#22c55e" },
-  gold: { primary: "#D4AF37", node: "#D4AF37" }
-} as const;
-
-export type TechivanoMarkAccent = keyof typeof ACCENT;
+export type TechivanoMarkAccent = "default" | "gold";
 
 type TechivanoMarkProps = {
   className?: string;
@@ -18,14 +14,14 @@ type TechivanoMarkProps = {
   title?: string;
   decorative?: boolean;
   /**
-   * `default` — navy + emerald (brand)
-   * `gold` — navy + gold (matches UI primary accent)
-   * `img` — raster from `/brand/techivano-mark.svg` (emerald only)
+   * `default` — source artwork
+   * `gold` — same asset with a light gold glow for UI accent contexts
+   * `img` — alias of default (kept for API compatibility)
    */
   variant?: TechivanoMarkAccent | "img";
   /** Subtle motion on hover (pair with interactive parents) */
   motion?: "none" | "hover-tilt" | "spin-slow";
-} & Omit<SVGProps<SVGSVGElement>, "width" | "height">;
+} & Omit<ImgHTMLAttributes<HTMLImageElement>, "width" | "height" | "src" | "alt">;
 
 const motionClass: Record<NonNullable<TechivanoMarkProps["motion"]>, string> = {
   none: "",
@@ -34,7 +30,7 @@ const motionClass: Record<NonNullable<TechivanoMarkProps["motion"]>, string> = {
 };
 
 /**
- * Techivano hex-cube mark — favicon uses `app/icon.svg`; raster via `variant="img"`.
+ * Techivano logo mark — PNG asset shared with favicons (`/brand/techivano-mark.png`, `app/icon.png`).
  */
 export function TechivanoMark({
   className,
@@ -46,50 +42,23 @@ export function TechivanoMark({
   ...rest
 }: TechivanoMarkProps) {
   const hidden = decorative || !title;
-
-  if (variant === "img") {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- optional raster fallback
-      <img
-        src={MARK_SRC_DEFAULT}
-        width={size}
-        height={size}
-        className={cn("shrink-0", motionClass[motion], className)}
-        alt={title ?? ""}
-        aria-hidden={hidden || undefined}
-      />
-    );
-  }
-
-  const colors = ACCENT[variant];
+  const accentGold = variant === "gold";
 
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 32 32"
+    // eslint-disable-next-line @next/next/no-img-element -- small fixed-size brand asset; avoids layout shift
+    <img
+      src={TECHIVANO_MARK_PNG}
       width={size}
       height={size}
-      className={cn("shrink-0", motionClass[motion], className)}
-      role={hidden ? "presentation" : "img"}
+      className={cn(
+        "shrink-0 object-contain",
+        motionClass[motion],
+        accentGold && "drop-shadow-[0_0_10px_rgba(212,175,55,0.45)]",
+        className
+      )}
+      alt={title ?? ""}
       aria-hidden={hidden || undefined}
-      aria-label={hidden ? undefined : title}
       {...rest}
-    >
-      {!hidden && title ? <title>{title}</title> : null}
-      <rect width="32" height="32" rx="6" fill="#0a192f" />
-      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <path
-          d="M16 7l8.5 4.5v5.2L16 21.2 7.5 16.7V11.5L16 7z"
-          stroke={colors.primary}
-          strokeWidth="1.75"
-        />
-        <path d="M7.5 11.5L16 16v9l-8.5-4.5v-9z" stroke="#ffffff" strokeWidth="1.75" />
-        <path d="M24.5 11.5L16 16v9l8.5-4.5v-9z" stroke="#ffffff" strokeWidth="1.75" />
-        <circle cx="16" cy="16" r="2.25" fill={colors.node} />
-        <circle cx="16" cy="9.2" r="1.15" fill={colors.node} />
-        <circle cx="10.2" cy="19.2" r="1.15" fill="#ffffff" />
-        <circle cx="21.8" cy="19.2" r="1.15" fill="#ffffff" />
-      </g>
-    </svg>
+    />
   );
 }

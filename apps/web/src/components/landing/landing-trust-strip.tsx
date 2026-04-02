@@ -1,6 +1,6 @@
 export function LandingTrustStrip() {
   return (
-    <section className="border-y border-white/5 py-10 text-center">
+    <section className="border-border border-y py-10 text-center">
       <p className="text-sm text-gray-400">
         Trusted by regulators, operators, and compliance teams
       </p>

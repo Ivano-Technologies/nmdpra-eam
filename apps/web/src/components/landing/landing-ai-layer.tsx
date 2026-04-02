@@ -20,7 +20,7 @@ const items = [
 
 export function LandingAiLayer() {
   return (
-    <section className="border-y border-white/5 bg-[#14100d]/40 py-20">
+    <section className="border-border bg-muted/50 border-y py-20">
       <div className="mx-auto max-w-6xl px-6">
         <h2 className="font-heading text-brand-gold text-center text-3xl font-semibold md:text-4xl">
           Smart insights powered by your data
@@ -33,10 +33,10 @@ export function LandingAiLayer() {
           {items.map(({ title, body, icon: Icon }) => (
             <li
               key={title}
-              className="flex flex-col items-center rounded-xl border border-white/5 bg-[#14100d]/80 p-6 text-center"
+              className="border-border bg-card flex flex-col items-center rounded-xl border p-6 text-center"
             >
               <Icon className="mb-4 size-10 text-brand-gold/90" aria-hidden />
-              <h3 className="font-heading text-lg text-white">{title}</h3>
+              <h3 className="font-heading text-foreground text-lg">{title}</h3>
               <p className="text-muted-foreground mt-2 text-sm">{body}</p>
             </li>
           ))}
