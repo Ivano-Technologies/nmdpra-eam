@@ -28,7 +28,7 @@ export function LandingFeatures() {
         {features.map(({ title, description, icon: Icon }) => (
           <div
             key={title}
-            className={`rounded-xl border border-white/5 bg-[#111827]/90 p-6 shadow-lg shadow-black/20 ${cardLift}`}
+            className={`rounded-xl border border-white/5 bg-[#14100d]/90 p-6 shadow-lg shadow-black/20 ${cardLift}`}
           >
             <Icon className="mb-3 size-8 text-brand-gold" aria-hidden />
             <h3 className="font-heading text-lg font-medium text-brand-gold">{title}</h3>

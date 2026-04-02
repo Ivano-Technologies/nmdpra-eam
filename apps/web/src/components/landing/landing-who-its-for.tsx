@@ -19,7 +19,7 @@ const audiences = [
 ] as const;
 
 const cardClass =
-  "rounded-xl border border-white/5 bg-gradient-to-b from-[#111827]/95 to-[#0F172A]/90 p-6 shadow-lg shadow-black/25 transition duration-200 hover:scale-[1.02] hover:border-white/10 hover:shadow-xl";
+  "rounded-xl border border-white/5 bg-gradient-to-b from-[#1a1410]/95 to-black/90 p-6 shadow-lg shadow-black/25 transition duration-200 hover:scale-[1.02] hover:border-[#deaf5f]/20 hover:shadow-xl";
 
 export function LandingWhoItsFor() {
   return (

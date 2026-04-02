@@ -96,7 +96,7 @@ export function NotificationBell() {
       </Button>
       {open ? (
         <div
-          className="border-border bg-[#111827] text-foreground absolute right-0 z-50 mt-2 w-[min(100vw-2rem,20rem)] max-h-[min(70vh,26rem)] overflow-hidden rounded-xl border border-white/10 shadow-xl shadow-black/40"
+          className="border-border bg-[#14100d] text-foreground absolute right-0 z-50 mt-2 w-[min(100vw-2rem,20rem)] max-h-[min(70vh,26rem)] overflow-hidden rounded-xl border border-white/10 shadow-xl shadow-black/40"
           role="dialog"
           aria-label="Notifications list"
         >

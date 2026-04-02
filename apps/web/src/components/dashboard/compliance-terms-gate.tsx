@@ -91,7 +91,7 @@ export function ComplianceTermsGate({ children }: Props) {
         <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-white/10 bg-bg-primary p-8 text-text-primary shadow-lg shadow-black/30">
           <h2
             id="terms-gate-title"
-            className="font-heading mb-4 text-2xl text-brand-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]"
+            className="font-heading mb-4 text-2xl text-brand-gold drop-shadow-[0_0_6px_rgba(222,175,95,0.35)]"
           >
             Data Usage &amp; Compliance
           </h2>
@@ -119,7 +119,7 @@ export function ComplianceTermsGate({ children }: Props) {
           ) : null}
           <button
             type="button"
-            className="mt-6 rounded-lg bg-brand-gold px-5 py-2 font-semibold text-black transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22c55e]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F172A] disabled:opacity-60"
+            className="mt-6 rounded-lg bg-brand-gold px-5 py-2 font-semibold text-black transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#deaf5f]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-60"
             onClick={() => void onAccept()}
             disabled={submitting}
           >

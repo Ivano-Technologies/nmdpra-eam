@@ -90,7 +90,7 @@ export const postMvpEmail = async (req: Request, res: Response): Promise<void> =
   const { data: sent, error } = await resend.emails.send({
     from,
     to,
-    subject: `RMLIS license report — ${data.generatedAt.slice(0, 10)}`,
+    subject: `Techivano license report — ${data.generatedAt.slice(0, 10)}`,
     text: "Attached: Regulatory Monitoring & License Intelligence MVP report (PDF).",
     attachments: [{ filename: "rmlis-mvp-report.pdf", content: pdf }]
   });

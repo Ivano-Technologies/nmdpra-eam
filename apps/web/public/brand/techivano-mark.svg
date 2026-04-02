@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-hidden="true">
+  <rect width="32" height="32" rx="6" fill="#0a192f"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top face (emerald accent) -->
+    <path
+      d="M16 7l8.5 4.5v5.2L16 21.2 7.5 16.7V11.5L16 7z"
+      stroke="#22c55e"
+      stroke-width="1.75"
+    />
+    <!-- Left face -->
+    <path d="M7.5 11.5L16 16v9l-8.5-4.5v-9z" stroke="#ffffff" stroke-width="1.75"/>
+    <!-- Right face -->
+    <path d="M24.5 11.5L16 16v9l8.5-4.5v-9z" stroke="#ffffff" stroke-width="1.75"/>
+    <!-- Circuit nodes -->
+    <circle cx="16" cy="16" r="2.25" fill="#22c55e" stroke="none"/>
+    <circle cx="16" cy="9.2" r="1.15" fill="#22c55e" stroke="none"/>
+    <circle cx="10.2" cy="19.2" r="1.15" fill="#ffffff" stroke="none"/>
+    <circle cx="21.8" cy="19.2" r="1.15" fill="#ffffff" stroke="none"/>
+  </g>
+</svg>

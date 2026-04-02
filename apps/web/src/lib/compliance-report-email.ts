@@ -1,3 +1,4 @@
+import { POWERED_BY_LINE } from "@/lib/brand";
 import type { MvpReportResponse } from "@/types/api";
 
 export function buildComplianceReportHtml(
@@ -28,6 +29,7 @@ export function buildComplianceReportHtml(
   </table>
   <h2 style="font-size: 1rem; margin-top: 1.5rem;">Top risk vendors</h2>
   ${topList}
+  <p style="margin-top: 1.75rem; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b;">${escapeHtml(POWERED_BY_LINE)}</p>
 </body>
 </html>
 `.trim();

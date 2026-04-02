@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { PRODUCT_NAME } from "@/lib/brand";
+
 export const metadata = {
-  title: "Data policy (draft) — RMLIS"
+  title: `Data policy (draft) — ${PRODUCT_NAME}`
 };
 
 export default function DataPolicyPage() {

@@ -14,6 +14,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 
+import { TechivanoLogo } from "@/components/brand/techivano-logo";
+import { TechivanoMark } from "@/components/brand/techivano-mark";
 import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -21,8 +23,8 @@ import { HelpDrawer } from "@/components/dashboard/help-drawer";
 import { RoleBadge } from "@/components/dashboard/role-badge";
 import { SystemStatus } from "@/components/dashboard/system-status";
 import { Button } from "@/components/ui/button";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDashboardHash } from "@/components/layout/use-dashboard-hash";
+import { PRODUCT_NAME } from "@/lib/brand";
 import { parseUserRole, type Role } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +34,7 @@ const navClass = cn(
 );
 
 const navActiveClass = cn(
-  "bg-[#166534] font-medium text-white shadow-sm"
+  "bg-accent font-medium text-accent-foreground shadow-sm"
 );
 
 type NavItem = {
@@ -160,7 +162,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <CommandPaletteProvider>
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#0F172A] to-[#020617] md:flex-row">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-black to-[#14100d] md:flex-row">
       {mobileOpen ? (
         <button
           type="button"
@@ -172,7 +174,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "z-50 flex-col border-r border-white/5 bg-[#0F172A]/80 shadow-lg shadow-black/20 backdrop-blur-md transition-[width] duration-200",
+          "z-50 flex-col border-r border-white/5 bg-[#0a0807]/80 shadow-lg shadow-black/20 backdrop-blur-md transition-[width] duration-200",
           "md:fixed md:inset-y-0 md:left-0 md:z-30",
           sidebarWidth,
           mobileOpen
@@ -181,13 +183,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/5 px-3 md:h-16">
-          <Link
-            href="/dashboard"
-            className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground"
-            onClick={closeMobile}
-          >
-            {!desktopCollapsed ? "RMLIS" : "R"}
-          </Link>
+          {!desktopCollapsed ? (
+            <TechivanoLogo
+              href="/dashboard"
+              size="sm"
+              wordmark="product"
+              motion="none"
+              className="min-w-0 truncate"
+              onClick={closeMobile}
+            />
+          ) : (
+            <Link
+              href="/dashboard"
+              title={PRODUCT_NAME}
+              aria-label={`${PRODUCT_NAME} dashboard`}
+              className="shrink-0 rounded-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring/60"
+              onClick={closeMobile}
+            >
+              <TechivanoMark size={28} decorative />
+            </Link>
+          )}
           <Button
             type="button"
             variant="ghost"
@@ -223,7 +238,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       <div
         className={cn(
-          "flex min-w-0 flex-1 flex-col bg-gradient-to-b from-[#0F172A] to-[#020617]",
+          "flex min-w-0 flex-1 flex-col bg-gradient-to-b from-black to-[#14100d]",
           mainOffset
         )}
       >
@@ -238,13 +253,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Menu className="size-4" aria-hidden />
             <span className="ml-1">Menu</span>
           </Button>
-          <span className="text-sm font-semibold text-sidebar-foreground">RMLIS</span>
+          <TechivanoLogo
+            href="/dashboard"
+            size="sm"
+            compact="responsive"
+            wordmark="product"
+            markVariant="gold"
+            motion="none"
+            onClick={closeMobile}
+            className="min-w-0"
+          />
         </div>
-        <header className="sticky top-0 z-20 border-b border-white/5 bg-gradient-to-b from-[#111827]/95 to-[#0f172a]/90 backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md">
+        <header className="sticky top-0 z-20 border-b border-white/5 bg-gradient-to-b from-black/95 to-[#0a0807]/90 backdrop-blur-md supports-[backdrop-filter]:backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
             <div className="min-w-0 flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground hidden text-sm md:inline">
-                Regulatory Intelligence
+              <span className="text-muted-foreground hidden text-sm font-medium md:inline">
+                {PRODUCT_NAME}
               </span>
               {isLoaded ? <RoleBadge role={role} /> : null}
               <SystemStatus />
@@ -264,11 +288,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <TooltipProvider delayDuration={200}>
-          <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
-            {children}
-          </main>
-        </TooltipProvider>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-6">
+          {children}
+        </main>
       </div>
     </div>
     </CommandPaletteProvider>

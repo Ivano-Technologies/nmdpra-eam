@@ -2,7 +2,7 @@
   "name": "@rmlis/db",
   "version": "0.1.0",
   "private": true,
-  "description": "RMLIS database SQL artifacts and Convex ingestion scripts",
+  "description": "Techivano database SQL artifacts and Convex ingestion scripts",
   "scripts": {
     "build": "node -e \"process.exit(0)\"",
     "ingest": "tsx scripts/ingest.ts",

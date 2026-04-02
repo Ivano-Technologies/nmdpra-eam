@@ -227,7 +227,7 @@ function ExpiryBandLegend() {
 }
 
 const goldGlow =
-  "drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]";
+  "drop-shadow-[0_0_6px_rgba(222,175,95,0.35)]";
 
 const kpiToneClass: Record<
   "gold" | "critical" | "warning" | "positive" | "neutral",
@@ -236,7 +236,7 @@ const kpiToneClass: Record<
   gold: `text-brand-gold ${goldGlow}`,
   critical: "text-red-400",
   warning: "text-amber-400",
-  positive: "text-green-500",
+  positive: "text-[#b37c4b]",
   neutral: "text-card-foreground"
 };
 
@@ -261,7 +261,7 @@ function KpiCard({
   emphasis?: boolean;
 }) {
   const labelText = (
-    <span className="text-xs uppercase tracking-wide text-gray-400">{label}</span>
+    <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
   );
   const labelEl = hint ? (
     <Tooltip>
@@ -275,7 +275,7 @@ function KpiCard({
   );
   return (
     <Card
-      className={`border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10 ${
+      className={`border border-white/5 bg-[#14100d] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10 ${
         emphasis && tone === "critical"
           ? "ring-1 ring-red-500/30 shadow-red-950/20"
           : emphasis
@@ -296,7 +296,7 @@ function KpiCard({
           {delta ? (
             <span
               className={
-                delta.positive ? "text-xs text-green-400" : "text-xs text-red-400"
+                delta.positive ? "text-xs text-[#deaf5f]" : "text-xs text-red-400"
               }
               title="Illustrative trend (demo — replace when historical API is available)"
             >
@@ -331,7 +331,7 @@ function WeeklyInsightCard({
     Boolean(mvp && mvp.summary.expiringIn30Days > 0) && !showHighRiskCta;
   return (
     <Card
-      className={`border border-white/5 bg-[#111827]/90 shadow-lg shadow-black/20 ${cardLift}`}
+      className={`border border-white/5 bg-[#14100d]/90 shadow-lg shadow-black/20 ${cardLift}`}
     >
       <CardHeader className="py-3">
         <CardTitle
@@ -688,12 +688,12 @@ export function DashboardView() {
             className="scroll-mt-28 space-y-6"
           >
             <h2
-              className={`font-heading text-lg text-[#D4AF37] ${goldGlow} mb-2`}
+              className={`font-heading text-lg text-brand-gold ${goldGlow} mb-2`}
             >
               Risk overview
             </h2>
             <RiskInsightBanner mvp={displayMvp} />
-            <div className="space-y-6 rounded-xl border border-white/5 bg-[#111827]/80 p-6 shadow-lg shadow-black/20">
+            <div className="space-y-6 rounded-xl border border-white/5 bg-[#14100d]/80 p-6 shadow-lg shadow-black/20">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <KpiCard
                 label="Total licences"
@@ -782,7 +782,7 @@ export function DashboardView() {
           <Card
             key="expiry-radar"
             id="section-expiry-radar"
-            className={`scroll-mt-28 border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
+            className={`scroll-mt-28 border border-white/5 bg-[#14100d] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
           >
             <CardHeader className="space-y-3">
               <div>
@@ -820,7 +820,7 @@ export function DashboardView() {
                     />
                     <Bar
                       dataKey="value"
-                      fill="#22c55e"
+                      fill="#deaf5f"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -843,7 +843,7 @@ export function DashboardView() {
           <Card
             key="risk-ranking"
             id="section-risk-ranking"
-            className={`scroll-mt-28 min-h-[22rem] border border-white/5 bg-[#111827] shadow-lg shadow-black/30 shadow-red-950/10 ${cardLift} ring-1 ring-white/5 hover:border-white/10`}
+            className={`scroll-mt-28 min-h-[22rem] border border-white/5 bg-[#14100d] shadow-lg shadow-black/30 shadow-red-950/10 ${cardLift} ring-1 ring-white/5 hover:border-white/10`}
           >
             <CardHeader>
               <CardTitle
@@ -907,7 +907,7 @@ export function DashboardView() {
           <Card
             key="reports"
             id="section-reports"
-            className={`scroll-mt-28 border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
+            className={`scroll-mt-28 border border-white/5 bg-[#14100d] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
           >
             <CardHeader>
               <CardTitle

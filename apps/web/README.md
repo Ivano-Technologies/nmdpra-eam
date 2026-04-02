@@ -1,6 +1,6 @@
 # @rmlis/web
 
-Next.js (App Router) frontend for RMLIS: landing page, Clerk sign-in, and authenticated dashboard backed by the Express API.
+Next.js (App Router) frontend for Techivano: landing page, Clerk sign-in, and authenticated dashboard backed by the Express API.
 
 Clerk runs via [`src/proxy.ts`](src/proxy.ts) (`clerkMiddleware` from `@clerk/nextjs/server`); `/dashboard` is protected. [`src/app/layout.tsx`](src/app/layout.tsx) wraps the app with `<ClerkProvider>` inside `<body>`.
 

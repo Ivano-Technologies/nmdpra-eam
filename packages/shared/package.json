@@ -2,7 +2,7 @@
   "name": "@rmlis/shared",
   "version": "0.1.1",
   "private": true,
-  "description": "Shared types and contracts for RMLIS",
+  "description": "Shared types and contracts for Techivano",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

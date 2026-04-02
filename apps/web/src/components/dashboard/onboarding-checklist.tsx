@@ -84,7 +84,7 @@ export function OnboardingChecklist({
           <div>
             <CardTitle className="text-lg">Getting started</CardTitle>
             <CardDescription>
-              Complete these steps to get the most from RMLIS.
+              Complete these steps to get the most from Techivano.
             </CardDescription>
           </div>
           <div className="flex gap-2">

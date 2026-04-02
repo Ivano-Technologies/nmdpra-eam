@@ -76,7 +76,7 @@ async function handleSendReports(req: Request) {
       const { error } = await resend.emails.send({
         from,
         to: sub.email,
-        subject: `RMLIS compliance report — ${sub.orgId}`,
+        subject: `Techivano compliance report — ${sub.orgId}`,
         html
       });
 

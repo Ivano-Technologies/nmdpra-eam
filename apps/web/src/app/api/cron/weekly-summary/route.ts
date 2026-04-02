@@ -2,6 +2,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { NextResponse } from "next/server";
 
+import { POWERED_BY_LINE } from "@/lib/brand";
 import { verifyCronRequest } from "@/lib/cron-auth";
 import { getAppOrigin } from "@/lib/app-origin";
 import {
@@ -35,11 +36,12 @@ function buildWeeklyHtml(snippet: string | undefined, fallbackLine: string): str
     snippet && snippet.trim().length > 0 ? snippet : fallbackLine;
   return `<!DOCTYPE html>
 <html>
-<body style="font-family:system-ui,-apple-system,sans-serif;color:#111827;line-height:1.5;max-width:560px">
+<body style="font-family:system-ui,-apple-system,sans-serif;color:#1c1816;line-height:1.5;max-width:560px">
   <h2 style="margin:0 0 12px;font-size:22px;font-weight:600">Weekly Summary</h2>
   <p style="margin:0 0 20px;color:#374151;font-size:15px">${escapeHtml(main)}</p>
-  <p style="margin:0"><a href="${reviewUrl}" style="color:#166534;font-weight:600;text-decoration:none">Review now →</a></p>
-  <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">RMLIS — Regulatory Intelligence</p>
+  <p style="margin:0"><a href="${reviewUrl}" style="color:#deaf5f;font-weight:600;text-decoration:none">Review now →</a></p>
+  <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Techivano — Operational Intelligence for National Infrastructure</p>
+  <p style="margin:12px 0 0;font-size:11px;color:#64748b;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(POWERED_BY_LINE)}</p>
 </body>
 </html>`;
 }
@@ -151,7 +153,7 @@ export async function GET(req: Request) {
         );
         await sendWeeklyEmail({
           to: email,
-          subject: "Weekly Summary — RMLIS",
+          subject: "Weekly Summary — Techivano",
           html
         });
         await client.mutation(userPreferencesSetLastNotifiedAtMutation, {

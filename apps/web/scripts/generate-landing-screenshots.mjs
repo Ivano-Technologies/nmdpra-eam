@@ -24,7 +24,7 @@ async function main() {
     const svg = `
 <svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="100%" fill="rgb(${bg.r},${bg.g},${bg.b})"/>
-  <text x="50%" y="48%" text-anchor="middle" fill="#d4af37" font-family="system-ui,sans-serif" font-size="28" font-weight="600">RMLIS</text>
+  <text x="50%" y="48%" text-anchor="middle" fill="#deaf5f" font-family="system-ui,sans-serif" font-size="28" font-weight="600">Techivano</text>
   <text x="50%" y="56%" text-anchor="middle" fill="#9ca3af" font-family="system-ui,sans-serif" font-size="16">${label}</text>
   <text x="50%" y="62%" text-anchor="middle" fill="#6b7280" font-family="system-ui,sans-serif" font-size="13">Replace with app screenshot</text>
 </svg>`;
