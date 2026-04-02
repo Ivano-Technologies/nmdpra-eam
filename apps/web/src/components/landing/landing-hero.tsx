@@ -18,16 +18,9 @@ export function LandingHero({ demoPdfHref }: LandingHeroProps) {
       <div className="mb-8 flex justify-center">
         <IvanoIQLogo size="md" markVariant="gold" motion="hover-tilt" />
       </div>
-      <h1 className="font-heading max-w-4xl text-5xl font-semibold tracking-tight text-[#D4AF37] md:text-6xl">
-        Stay Ahead of Regulatory Risk
+      <h1 className="font-heading text-[#D4AF37] max-w-5xl text-[2.1rem] font-semibold leading-snug tracking-tight md:text-[2.625rem]">
+        Ivano IQ - Operational Intelligence for Enterprise Infrastructure
       </h1>
-      <p className="text-muted-foreground mt-4 max-w-2xl text-sm font-medium md:text-base">
-        Turn compliance data into actionable operational intelligence.
-      </p>
-      <p className="mt-4 max-w-2xl text-lg text-gray-400 md:text-xl">
-        Ivano IQ delivers operational intelligence to help you monitor licenses, detect risk, and
-        generate audit-ready reports.
-      </p>
       <Show when="signed-out">
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <SignUpButton mode="modal">

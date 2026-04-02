@@ -1,16 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Home", () => {
-  test("shows hero headline and insight-led copy", async ({ page }) => {
+  test("shows hero headline", async ({ page }) => {
     await page.goto("/");
     const hero = page.locator("main > section").first();
     await expect(hero.getByRole("heading", { level: 1 })).toHaveText(
-      "Stay Ahead of Regulatory Risk"
+      "Ivano IQ - Operational Intelligence for Enterprise Infrastructure"
     );
-    await expect(
-      hero.getByText(/Turn compliance data into actionable operational intelligence/i)
-    ).toBeVisible();
-    await expect(hero.getByText(/Ivano IQ delivers operational intelligence/i)).toBeVisible();
   });
 
   test("shows trust strip and product sections", async ({ page }) => {
