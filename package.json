@@ -7,6 +7,7 @@
   "scripts": {
     "test": "echo No tests configured",
     "test:e2e": "pnpm --filter @rmlis/web test:e2e",
+    "test:e2e:deploy": "pnpm --filter @rmlis/web test:e2e:deploy",
     "lint": "eslint convex",
     "lint:convex": "eslint convex",
     "dev": "pnpm --filter @rmlis/api dev",
