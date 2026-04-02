@@ -61,7 +61,7 @@ export function ClientDashboardPlaceholder() {
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Button type="button" asChild>
-            <a href="mailto:?subject=Techivano%20access%20request">
+            <a href="mailto:?subject=Ivano%20IQ%20access%20request">
               Contact administrator
             </a>
           </Button>

@@ -1,6 +1,6 @@
 # Convex backend
 
-This directory holds Convex functions for Techivano (vendors, licenses, ingestion, reporting queries).
+This directory holds Convex functions for **Ivano IQ** (vendors, licenses, ingestion, reporting queries).
 
 ## Setup
 

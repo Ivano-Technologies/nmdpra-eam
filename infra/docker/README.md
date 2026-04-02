@@ -1,6 +1,6 @@
 # docker
 
-Infrastructure container assets.
+Infrastructure container assets for the **nmdpra-eam** / Ivano IQ stack.
 
 Run from this directory:
 

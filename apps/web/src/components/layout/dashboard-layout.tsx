@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 
+import { IvanoIQWordmarkInline } from "@/components/brand/ivano-iq-logo";
 import { TechivanoLogo } from "@/components/brand/techivano-logo";
 import { TechivanoMark } from "@/components/brand/techivano-mark";
 import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
@@ -264,9 +265,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <header className="bg-app-header-glass border-border sticky top-0 z-20 border-b backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-3">
             <div className="min-w-0 flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground hidden text-sm font-medium md:inline">
-                {PRODUCT_NAME}
-              </span>
+              <div className="flex flex-col gap-0.5">
+                <IvanoIQWordmarkInline className="text-sm" />
+                <span className="text-muted-foreground text-xs leading-tight">
+                  Operational Intelligence
+                </span>
+              </div>
               {isLoaded ? <RoleBadge role={role} /> : null}
               <SystemStatus />
             </div>

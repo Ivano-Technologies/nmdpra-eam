@@ -21,7 +21,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { DashboardCommandBar } from "@/components/dashboard/dashboard-command-bar";
 import { ClientDashboardPlaceholder } from "@/components/dashboard/client-dashboard-placeholder";
 import { DashboardCustomizePanel } from "@/components/dashboard/dashboard-customize-panel";
 import { DigestPreferencesCard } from "@/components/dashboard/digest-preferences-card";
@@ -704,7 +703,7 @@ export function DashboardView() {
               <KpiCard
                 label="Expiring soon"
                 value={displayMvp.summary.expiringIn30Days}
-                hint="Due within 30 days (from row days-to-expiry)"
+                hint={`${displayMvp.summary.expiringIn30Days} expiring within 30 days — ${displayMvp.summary.critical} require immediate action (critical risk)`}
                 tone="warning"
                 emphasis
                 delta={illustrativeKpiTrend(
@@ -1006,7 +1005,6 @@ export function DashboardView() {
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
             Licence intelligence overview — data from live API.
           </p>
-          <DashboardCommandBar />
           <TrustStrip generatedAtIso={mvpRaw?.generatedAt} role={role} />
           {mvpRaw && !isLoading ? (
             <p className="text-foreground mt-2 flex flex-wrap items-center gap-2 text-sm font-medium">

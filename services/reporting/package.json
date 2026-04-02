@@ -2,7 +2,7 @@
   "name": "@rmlis/reporting",
   "version": "0.1.1",
   "private": true,
-  "description": "Techivano reporting service",
+  "description": "PDF/report generation for Ivano IQ (MVP reports and templates).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {

@@ -5,11 +5,15 @@ import { expect, test } from "@playwright/test";
  * The full suite in other specs still runs for complete coverage.
  */
 test.describe("Post-deploy smoke", () => {
-  test("home includes Techivano branding", async ({ page }) => {
+  test("home includes Ivano IQ branding", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Techivano", { exact: false }).first()).toBeVisible({
-      timeout: 60_000
-    });
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Stay Ahead of Regulatory Risk"
+      })
+    ).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator("footer").getByText("Powered by Techivano")).toBeVisible();
   });
 
   test("static assets respond", async ({ request }) => {
@@ -21,6 +25,9 @@ test.describe("Post-deploy smoke", () => {
 
     const brandMark = await request.get("/brand/techivano-mark.png");
     expect([200, 304]).toContain(brandMark.status());
+
+    const brandMarkLight = await request.get("/brand/techivano-mark-light.png");
+    expect([200, 304]).toContain(brandMarkLight.status());
 
     const og = await request.get("/opengraph-image");
     expect([200, 304]).toContain(og.status());

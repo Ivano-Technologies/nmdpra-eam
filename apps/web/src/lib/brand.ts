@@ -1,14 +1,27 @@
-/** Company / platform brand */
-export const BRAND_NAME = "Techivano";
-/** Primary customer-facing product name (use in app chrome, reports) */
-export const PRODUCT_NAME = "Techivano EAM";
-/** Longer product descriptor */
-export const PRODUCT_LINE = "Enterprise Asset Management";
-export const BRAND_INITIAL = "T";
-export const BRAND_TAGLINE = "Operational Intelligence for National Infrastructure";
-/** Short line for metadata / emails */
-export const BRAND_DESCRIPTION =
-  "Operational Intelligence for National Infrastructure — monitor compliance, detect risks, and generate audit-ready reports.";
+/** Primary product identity */
+export const BRAND_NAME = "Ivano IQ";
 
-/** Footer / badge line */
-export const POWERED_BY_LINE = "Powered by Techivano";
+export const BRAND_TAGLINE =
+  "Operational Intelligence for Enterprise Infrastructure";
+
+export const BRAND_DESCRIPTION =
+  "Ivano IQ helps organizations monitor infrastructure, detect risk, and stay compliant with real-time operational intelligence.";
+
+/** Secondary: footer, legal, email footers, attribution */
+export const BRAND_FOOTER = "Powered by Techivano";
+
+/** Same as BRAND_FOOTER — uppercase attribution line */
+export const POWERED_BY_LINE = BRAND_FOOTER;
+
+/** Short initial for compact chrome */
+export const BRAND_INITIAL = "I";
+
+/** Primary product name in UI (same as BRAND_NAME) */
+export const PRODUCT_NAME = BRAND_NAME;
+
+/** Longer descriptor line (e.g. footers, metadata) */
+export const PRODUCT_LINE = BRAND_TAGLINE;
+
+/** Tailwind classes for gold “IQ” wordmark accent (brand recall) */
+export const BRAND_IQ_ACCENT_CLASS =
+  "text-[#D4AF37] drop-shadow-[0_0_6px_rgba(212,175,55,0.35)]";

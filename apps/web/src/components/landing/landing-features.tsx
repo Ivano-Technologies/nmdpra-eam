@@ -5,18 +5,21 @@ const cardLift =
 
 const features = [
   {
-    title: "License monitoring",
-    description: "Real-time tracking across assets and licence types.",
+    title: "Unified Visibility",
+    description:
+      "One lens across licences and assets — turn fragmented data into a single operational picture.",
     icon: BarChart3
   },
   {
-    title: "Risk scoring",
-    description: "Instant visibility into compliance gaps and exposure.",
+    title: "Intelligent Risk Detection",
+    description:
+      "Prioritize what matters with explainable signals, not just raw counts.",
     icon: ShieldAlert
   },
   {
-    title: "Reporting",
-    description: "Export-ready audit reports for stakeholders.",
+    title: "Audit-Ready Intelligence",
+    description:
+      "Export evidence and narratives stakeholders can defend — insight first, spreadsheets second.",
     icon: FolderOutput
   }
 ] as const;

@@ -2,7 +2,7 @@
   "name": "nmdpra-eam",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "Monorepo for Ivano IQ — operational intelligence for enterprise infrastructure (NMDPRA EAM demo): Next.js app, API, Convex, reporting, and data tooling.",
   "main": "index.js",
   "scripts": {
     "test": "echo No tests configured",

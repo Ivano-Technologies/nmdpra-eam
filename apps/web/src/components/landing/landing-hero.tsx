@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { FileText } from "lucide-react";
 
+import { IvanoIQLogo } from "@/components/brand/ivano-iq-logo";
 import { TechivanoLogo } from "@/components/brand/techivano-logo";
 import { Button } from "@/components/ui/button";
 
@@ -14,16 +15,26 @@ type LandingHeroProps = {
 export function LandingHero({ demoPdfHref }: LandingHeroProps) {
   return (
     <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 pb-16 pt-12 text-center md:pb-24">
-      <h1 className="font-heading text-foreground max-w-4xl text-4xl font-semibold tracking-tight md:text-6xl">
-        Techivano EAM
+      <div className="mb-8 flex justify-center">
+        <IvanoIQLogo size="md" markVariant="gold" motion="hover-tilt" />
+      </div>
+      <h1 className="font-heading max-w-4xl text-5xl font-semibold tracking-tight text-[#D4AF37] md:text-6xl">
+        Stay Ahead of Regulatory Risk
       </h1>
-      <p className="text-muted-foreground mt-4 max-w-2xl text-lg md:text-xl">
-        Operational Intelligence for National Infrastructure
+      <p className="text-muted-foreground mt-4 max-w-2xl text-sm font-medium md:text-base">
+        Turn compliance data into actionable operational intelligence.
+      </p>
+      <p className="mt-4 max-w-2xl text-lg text-gray-400 md:text-xl">
+        Ivano IQ delivers operational intelligence to help you monitor licenses, detect risk, and
+        generate audit-ready reports.
       </p>
       <Show when="signed-out">
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <SignUpButton mode="modal">
-            <Button size="lg" className="bg-black font-semibold text-white hover:bg-black/90">
+            <Button
+              size="lg"
+              className="bg-black font-semibold text-white hover:bg-black/90 dark:bg-brand-gold dark:text-black dark:hover:bg-brand-gold/90"
+            >
               Get Started
             </Button>
           </SignUpButton>
@@ -37,7 +48,11 @@ export function LandingHero({ demoPdfHref }: LandingHeroProps) {
       </Show>
       <Show when="signed-in">
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Button size="lg" className="bg-black font-semibold text-white hover:bg-black/90" asChild>
+          <Button
+            size="lg"
+            className="bg-black font-semibold text-white hover:bg-black/90 dark:bg-brand-gold dark:text-black dark:hover:bg-brand-gold/90"
+            asChild
+          >
             <Link href="/dashboard">Go to dashboard</Link>
           </Button>
         </div>

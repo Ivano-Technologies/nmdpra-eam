@@ -2,7 +2,7 @@
   "name": "@rmlis/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Techivano API service",
+  "description": "Express API for Ivano IQ — licences, risk ranking, reports, and cron integrations.",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "pnpm --filter @rmlis/shared build && pnpm --filter @rmlis/reporting build && tsc -p tsconfig.json && node -e \"require('fs').cpSync('public','dist/public',{recursive:true})\"",

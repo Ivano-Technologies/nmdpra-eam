@@ -2,7 +2,7 @@
   "name": "@rmlis/worker",
   "version": "0.1.0",
   "private": true,
-  "description": "Techivano scheduled worker service",
+  "description": "Scheduled worker jobs supporting Ivano IQ backend processes.",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",

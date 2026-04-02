@@ -11,7 +11,10 @@ export function LandingFinalCta() {
       <div className="mx-auto flex max-w-5xl justify-center px-4">
         <Show when="signed-out">
           <SignUpButton mode="modal">
-            <Button size="lg" className="bg-black font-semibold text-white hover:bg-black/90">
+            <Button
+              size="lg"
+              className="bg-black font-semibold text-white hover:bg-black/90 dark:bg-brand-gold dark:text-black dark:hover:bg-brand-gold/90"
+            >
               Get Started
             </Button>
           </SignUpButton>
@@ -19,7 +22,7 @@ export function LandingFinalCta() {
         <Show when="signed-in">
           <Button
             size="lg"
-            className="bg-black font-semibold text-white hover:bg-black/90"
+            className="bg-black font-semibold text-white hover:bg-black/90 dark:bg-brand-gold dark:text-black dark:hover:bg-brand-gold/90"
             asChild
           >
             <Link href="/dashboard">Open dashboard</Link>

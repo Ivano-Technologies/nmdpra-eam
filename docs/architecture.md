@@ -1,3 +1,3 @@
-# Techivano Architecture Notes
+# Ivano IQ architecture notes
 
-Initial scaffold for Regulatory Monitoring & License Intelligence System.
+Initial scaffold for regulatory monitoring and licence intelligence (NMDPRA EAM demo).

@@ -7,10 +7,11 @@ type PoweredByTechivanoProps = {
   variant?: "dark" | "light" | "muted";
 };
 
+/** Charcoal gray on page; `dark` kept for near-black on light PDF margins */
 const variantClass: Record<NonNullable<PoweredByTechivanoProps["variant"]>, string> = {
   dark: "text-zinc-900",
   light: "text-foreground",
-  muted: "text-muted-foreground"
+  muted: "text-stone-600 dark:text-stone-400"
 };
 
 /**

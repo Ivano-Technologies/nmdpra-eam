@@ -2,6 +2,7 @@
   "name": "@rmlis/web",
   "version": "0.1.0",
   "private": true,
+  "description": "Ivano IQ web app — Next.js (App Router): marketing site, Clerk auth, and operational intelligence dashboard.",
   "scripts": {
     "dev": "next dev",
     "prebuild": "node ./scripts/generate-favicons.mjs && pnpm --filter @rmlis/shared run build",

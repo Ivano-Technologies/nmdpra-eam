@@ -40,8 +40,8 @@ function buildWeeklyHtml(snippet: string | undefined, fallbackLine: string): str
   <h2 style="margin:0 0 12px;font-size:22px;font-weight:600">Weekly Summary</h2>
   <p style="margin:0 0 20px;color:#374151;font-size:15px">${escapeHtml(main)}</p>
   <p style="margin:0"><a href="${reviewUrl}" style="color:#deaf5f;font-weight:600;text-decoration:none">Review now →</a></p>
-  <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Techivano — Operational Intelligence for National Infrastructure</p>
-  <p style="margin:12px 0 0;font-size:11px;color:#64748b;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(POWERED_BY_LINE)}</p>
+  <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Ivano IQ — Operational Intelligence for Enterprise Infrastructure</p>
+  <p style="margin:12px 0 0;font-size:11px;color:#57534e;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(POWERED_BY_LINE)}</p>
 </body>
 </html>`;
 }
@@ -153,7 +153,7 @@ export async function GET(req: Request) {
         );
         await sendWeeklyEmail({
           to: email,
-          subject: "Weekly Summary — Techivano",
+          subject: "Ivano IQ — Weekly Compliance Summary",
           html
         });
         await client.mutation(userPreferencesSetLastNotifiedAtMutation, {

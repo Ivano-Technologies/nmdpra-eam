@@ -3,11 +3,11 @@ import { join } from "path";
 
 import { ImageResponse } from "next/og";
 
-import { BRAND_NAME, BRAND_TAGLINE, PRODUCT_NAME } from "@/lib/brand";
+import { BRAND_TAGLINE, PRODUCT_NAME } from "@/lib/brand";
 
 export const runtime = "nodejs";
 
-export const alt = `${PRODUCT_NAME} — Regulatory compliance, simplified`;
+export const alt = `${PRODUCT_NAME} — Operational intelligence for enterprise infrastructure`;
 
 export const size = {
   width: 1200,
@@ -58,7 +58,17 @@ export default async function OpenGraphImage() {
             }}
           />
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ color: "#ffffff", fontSize: 28, fontWeight: 700 }}>{BRAND_NAME}</span>
+            <span style={{ fontSize: 28, fontWeight: 700 }}>
+              <span style={{ color: "#ffffff" }}>Ivano </span>
+              <span
+                style={{
+                  color: "#D4AF37",
+                  textShadow: "0 0 6px rgba(212,175,55,0.35)"
+                }}
+              >
+                IQ
+              </span>
+            </span>
             <span style={{ color: "#94a3b8", fontSize: 14 }}>{BRAND_TAGLINE}</span>
           </div>
         </div>
@@ -86,7 +96,7 @@ export default async function OpenGraphImage() {
               Regulatory Compliance, Simplified
             </span>
             <span style={{ color: "#cbd5e1", fontSize: 22, lineHeight: 1.4 }}>
-              Stay ahead of risk and audits with {PRODUCT_NAME}.
+              Turn compliance data into actionable operational intelligence with {PRODUCT_NAME}.
             </span>
           </div>
 

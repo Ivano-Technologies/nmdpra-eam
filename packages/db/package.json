@@ -2,7 +2,7 @@
   "name": "@rmlis/db",
   "version": "0.1.0",
   "private": true,
-  "description": "Techivano database SQL artifacts and Convex ingestion scripts",
+  "description": "SQL artifacts, seed data, and Convex ingestion scripts for Ivano IQ licence data.",
   "scripts": {
     "build": "node -e \"process.exit(0)\"",
     "ingest": "tsx scripts/ingest.ts",

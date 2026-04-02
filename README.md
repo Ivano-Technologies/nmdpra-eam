@@ -1,5 +1,7 @@
 # nmdpra-eam
 
+**Ivano IQ** — operational intelligence for enterprise infrastructure. This monorepo powers the NMDPRA vendor-licensing demo: Next.js web app, Express API, Convex, PDF reporting, and data ingestion.
+
 ## Client demo (API + static UI)
 
 1. Set `CONVEX_URL` (and optional `CORS_ORIGIN` if the browser loads the demo from another origin).

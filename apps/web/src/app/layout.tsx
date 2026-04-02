@@ -35,8 +35,8 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
   title: {
-    default: `${BRAND_NAME} — ${BRAND_TAGLINE}`,
-    template: `%s — ${BRAND_NAME}`
+    default: BRAND_NAME,
+    template: `%s | ${BRAND_NAME}`
   },
   description: BRAND_DESCRIPTION,
   applicationName: BRAND_NAME,
