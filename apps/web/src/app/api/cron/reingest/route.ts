@@ -21,7 +21,8 @@ export async function GET(req: Request) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
   const ingestSecret = process.env.INGEST_SECRET?.trim();
   const jobSecret = process.env.INTERNAL_JOB_SECRET?.trim();
-  if (!convexUrl || !ingestSecret || !jobSecret) {
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  if (!convexUrl || !ingestSecret || !jobSecret || !blobToken) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
@@ -32,7 +33,11 @@ export async function GET(req: Request) {
 
   for (const u of uploads) {
     try {
-      const fileRes = await fetch(u.fileUrl);
+      const fileRes = await fetch(u.fileUrl, {
+        headers: {
+          Authorization: `Bearer ${blobToken}`
+        }
+      });
       if (!fileRes.ok) {
         results.push({
           uploadId: u.id,

@@ -88,7 +88,7 @@ export async function POST(req: Request) {
 
     const pathname = `uploads/${orgId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
     const blob = await put(pathname, Buffer.from(arrayBuffer), {
-      access: "public",
+      access: "private",
       token: blobToken
     });
 
@@ -123,8 +123,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: e.message }, { status: e.status });
     }
     console.error("POST /api/upload:", e);
+    const message =
+      e instanceof Error && e.message
+        ? "Upload failed. Please try again or contact support."
+        : "Upload failed. Please try again.";
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Upload failed" },
+      { error: message },
       { status: 500 }
     );
   }

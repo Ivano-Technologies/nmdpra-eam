@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Home", () => {
-  test("shows hero headline", async ({ page }) => {
+  test("shows hero primary call-to-action", async ({ page }) => {
     await page.goto("/");
     const hero = page.locator("main > section").first();
-    await expect(hero.getByRole("heading", { level: 1 })).toHaveText("IVANO IQ");
+    await expect(hero.getByText("Explore the Platform").first()).toBeVisible();
   });
 
   test("shows trust strip and product sections", async ({ page }) => {

@@ -20,7 +20,6 @@ import { TechivanoMark } from "@/components/brand/techivano-mark";
 import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { HelpDrawer } from "@/components/dashboard/help-drawer";
 import { RoleBadge } from "@/components/dashboard/role-badge";
 import { SystemStatus } from "@/components/dashboard/system-status";
 import { Button } from "@/components/ui/button";
@@ -277,7 +276,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div className="flex shrink-0 items-center gap-2">
               {isLoaded ? <NotificationBell /> : null}
               <CommandPalette role={role} />
-              <HelpDrawer />
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/settings">Settings</Link>
               </Button>

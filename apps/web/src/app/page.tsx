@@ -1,4 +1,3 @@
-import { getPublicApiBase } from "@/lib/api";
 import { PoweredByTechivano } from "@/components/brand/powered-by-techivano";
 import { LandingAiLayer } from "@/components/landing/landing-ai-layer";
 import { LandingFeatures } from "@/components/landing/landing-features";
@@ -9,13 +8,10 @@ import { LandingTrustStrip } from "@/components/landing/landing-trust-strip";
 import { LandingWhoItsFor } from "@/components/landing/landing-who-its-for";
 
 export default async function HomePage() {
-  const apiBase = getPublicApiBase();
-  const demoPdfHref = `${apiBase}/reports/mvp.pdf`;
-
   return (
     <main className="text-foreground flex flex-1 flex-col">
       <LandingTopNav />
-      <LandingHero demoPdfHref={demoPdfHref} />
+      <LandingHero />
       <LandingTrustStrip />
       <LandingFeatures />
       <LandingWhoItsFor />

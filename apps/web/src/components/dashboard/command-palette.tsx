@@ -5,7 +5,6 @@ import { useCallback, useEffect } from "react";
 import { Command } from "cmdk";
 
 import { useCommandPalette } from "@/components/dashboard/command-palette-context";
-import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/roles";
 
 type Props = {
@@ -58,20 +57,19 @@ export function CommandPalette({ role }: Props) {
     return null;
   }
 
+  const itemClass =
+    "cursor-pointer rounded-lg px-3 py-2 text-sm text-slate-300 outline-none transition-colors duration-150 hover:bg-white/5 aria-selected:bg-[#22c55e]/10 aria-selected:text-white";
+
   return (
     <>
-      <Button
+      <button
         type="button"
-        variant="outline"
-        size="sm"
-        className="text-muted-foreground hidden md:inline-flex"
+        className="hidden md:flex items-center gap-3 rounded-xl border border-white/10 bg-[#111827]/80 px-4 py-2 text-sm text-gray-300 shadow-lg shadow-black/30 backdrop-blur-md transition-all duration-200 hover:scale-[1.01] hover:border-white/20 focus-visible:border-[#22c55e]/50 focus-visible:outline-none"
         onClick={() => setOpen(true)}
       >
-        Search or ask…
-        <kbd className="bg-muted ml-2 rounded px-1.5 py-0.5 text-[10px] font-medium">
-          ⌘K
-        </kbd>
-      </Button>
+        <span className="text-xs text-gray-500">⌘K</span>
+        <span>Search</span>
+      </button>
       {open ? (
         <div
           className="fixed inset-0 z-[100] flex items-start justify-center bg-black/50 p-4 pt-[15vh]"
@@ -79,21 +77,24 @@ export function CommandPalette({ role }: Props) {
           aria-modal="true"
           aria-label="Command palette"
         >
-          <Command className="bg-popover text-popover-foreground border-border w-full max-w-lg overflow-hidden rounded-xl border shadow-lg">
-            <Command.Input
-              placeholder="Try: expiring, risk, report, weekly…"
-              className="border-input w-full border-b px-4 py-3 text-sm outline-none"
-            />
-            <Command.List className="max-h-72 overflow-y-auto p-2">
-              <Command.Empty className="text-muted-foreground py-6 text-center text-sm">
+          <Command className="w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0f172a]/95 text-slate-100 shadow-xl shadow-black/40 backdrop-blur-xl">
+            <div className="m-3 flex items-center gap-3 rounded-xl border border-white/10 bg-[#111827]/80 px-4 py-2 text-sm text-gray-300 shadow-lg shadow-black/30 backdrop-blur-md transition-colors duration-200 hover:border-white/20 focus-within:border-[#22c55e]/50">
+              <span className="text-xs text-gray-500">⌘K</span>
+              <Command.Input
+                placeholder="Search"
+                className="w-full bg-transparent text-sm text-gray-300 placeholder:text-gray-500 outline-none"
+              />
+            </div>
+            <Command.List className="max-h-72 overflow-y-auto px-3 pb-3">
+              <Command.Empty className="py-6 text-center text-sm text-gray-500">
                 No results.
               </Command.Empty>
               <Command.Group
                 heading="Quick actions"
-                className="text-muted-foreground px-2 py-1.5 text-xs font-medium"
+                className="px-2 py-1.5 text-xs font-medium text-gray-500"
               >
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   keywords={[
                     "show",
                     "expiring",
@@ -108,90 +109,90 @@ export function CommandPalette({ role }: Props) {
                   Show expiring licences
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   keywords={["open", "risk", "overview", "kpi", "attention"]}
                   onSelect={() => go("#section-overview")}
                 >
                   Open risk overview
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   keywords={["generate", "report", "pdf", "export", "download", "email"]}
                   onSelect={() => go("#section-reports")}
                 >
                   Generate report
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   keywords={["weekly", "insight", "digest", "summary"]}
                   onSelect={() => go("#section-weekly-insight")}
                 >
                   View weekly insight
                 </Command.Item>
               </Command.Group>
-              <Command.Group heading="Dashboard" className="text-muted-foreground px-2 py-1.5 text-xs font-medium">
+              <Command.Group heading="Dashboard" className="px-2 py-1.5 text-xs font-medium text-gray-500">
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => go("#section-overview")}
                 >
                   Overview
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => go("#section-data-upload")}
                 >
                   Data upload
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => go("#section-expiry-radar")}
                 >
                   Expiry radar
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => go("#section-risk-ranking")}
                 >
                   Risk ranking
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => go("#section-reports")}
                 >
                   Reports
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => go("#section-weekly-insight")}
                 >
                   Weekly insight
                 </Command.Item>
               </Command.Group>
               {role === "owner" ? (
-                <Command.Group heading="Owner" className="text-muted-foreground px-2 py-1.5 text-xs font-medium">
+                <Command.Group heading="Owner" className="px-2 py-1.5 text-xs font-medium text-gray-500">
                   <Command.Item
-                    className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                    className={itemClass}
                     onSelect={() => go("#section-owner-panel")}
                   >
                     Owner workspace
                   </Command.Item>
                   <Command.Item
-                    className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                    className={itemClass}
                     onSelect={() => go("#section-owner-users")}
                   >
                     User roles
                   </Command.Item>
                   <Command.Item
-                    className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                    className={itemClass}
                     onSelect={() => go("#section-data-control")}
                   >
                     Data control
                   </Command.Item>
                 </Command.Group>
               ) : null}
-              <Command.Group heading="Pages" className="text-muted-foreground px-2 py-1.5 text-xs font-medium">
+              <Command.Group heading="Pages" className="px-2 py-1.5 text-xs font-medium text-gray-500">
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => {
                     setOpen(false);
                     router.push("/data-policy");
@@ -200,7 +201,7 @@ export function CommandPalette({ role }: Props) {
                   Data policy
                 </Command.Item>
                 <Command.Item
-                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  className={itemClass}
                   onSelect={() => {
                     setOpen(false);
                     router.push("/");
@@ -210,9 +211,12 @@ export function CommandPalette({ role }: Props) {
                 </Command.Item>
               </Command.Group>
             </Command.List>
+            <p className="border-t border-white/10 px-4 py-2 text-xs text-gray-500">
+              Try: expiring, risk, reports
+            </p>
             <button
               type="button"
-              className="text-muted-foreground hover:bg-muted w-full border-t px-4 py-2 text-left text-xs"
+              className="w-full border-t border-white/10 px-4 py-2 text-left text-xs text-gray-400 transition hover:bg-white/5"
               onClick={() => setOpen(false)}
             >
               Close

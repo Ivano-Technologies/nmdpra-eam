@@ -75,7 +75,11 @@ export function ExcelUploadCard({ onUploadSuccess }: ExcelUploadCardProps = {}) 
         await onUploadSuccess?.();
         input.value = "";
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Upload failed");
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Upload failed. Check your file and try again."
+        );
       } finally {
         setUploading(false);
       }
@@ -101,7 +105,7 @@ export function ExcelUploadCard({ onUploadSuccess }: ExcelUploadCardProps = {}) 
           >
             data policy (draft)
           </a>
-          . Server storage requires{" "}
+          . Server-side storage requires{" "}
           <span className="text-foreground font-medium">BLOB_READ_WRITE_TOKEN</span>.
         </CardDescription>
       </CardHeader>
