@@ -6,6 +6,7 @@ const LABELS: Record<DashboardSectionId, string> = {
   "expiry-radar": "Expiry radar",
   "risk-ranking": "Risk ranking",
   reports: "Reports",
+  "weekly-insight": "Weekly insight",
   "owner-panel": "Owner workspace"
 };
 

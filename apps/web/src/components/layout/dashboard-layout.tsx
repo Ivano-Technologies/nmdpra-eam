@@ -14,7 +14,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useState, type ReactNode } from "react";
 
+import { CommandPaletteProvider } from "@/components/dashboard/command-palette-context";
 import { CommandPalette } from "@/components/dashboard/command-palette";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { HelpDrawer } from "@/components/dashboard/help-drawer";
 import { RoleBadge } from "@/components/dashboard/role-badge";
 import { SystemStatus } from "@/components/dashboard/system-status";
@@ -157,6 +159,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const mainOffset = desktopCollapsed ? "md:pl-[4.5rem]" : "md:pl-56";
 
   return (
+    <CommandPaletteProvider>
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#0F172A] to-[#020617] md:flex-row">
       {mobileOpen ? (
         <button
@@ -247,6 +250,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <SystemStatus />
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              {isLoaded ? <NotificationBell /> : null}
               <CommandPalette role={role} />
               <HelpDrawer />
               <Button variant="ghost" size="sm" asChild>
@@ -267,5 +271,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </TooltipProvider>
       </div>
     </div>
+    </CommandPaletteProvider>
   );
 }

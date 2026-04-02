@@ -7,6 +7,7 @@ packages:
 # See https://pnpm.io/settings#onlybuiltdependencies
 onlyBuiltDependencies:
   - "@clerk/shared"
+  - "@playwright/test"
   - esbuild
   - msw
   - sharp

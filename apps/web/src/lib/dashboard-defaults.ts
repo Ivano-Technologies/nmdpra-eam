@@ -4,9 +4,10 @@ import type { DashboardLayout, DashboardSectionId } from "@/types/user-preferenc
 export const ALL_ADMIN_SECTION_IDS: DashboardSectionId[] = [
   "overview",
   "data-upload",
-  "expiry-radar",
   "risk-ranking",
-  "reports"
+  "expiry-radar",
+  "reports",
+  "weekly-insight"
 ];
 
 export const OWNER_EXTRA_SECTION: DashboardSectionId = "owner-panel";
@@ -29,15 +30,20 @@ export function mergeDashboardLayout(
   role: Role
 ): DashboardLayout {
   const d = defaultDashboardLayout(role);
-  const order =
+  const baseOrder =
     user?.order?.length &&
     user.order.every((id) => validSectionId(id, role))
-      ? user.order
-      : d.order;
+      ? [...user.order]
+      : [...d.order];
+  for (const id of d.order) {
+    if (!baseOrder.includes(id)) {
+      baseOrder.push(id);
+    }
+  }
   const hidden = user?.hidden?.length
     ? [...new Set(user.hidden.filter((id) => validSectionId(id, role)))]
     : d.hidden;
-  return { order, hidden };
+  return { order: baseOrder, hidden };
 }
 
 function validSectionId(id: string, role: Role): id is DashboardSectionId {

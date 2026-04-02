@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
 import { Command } from "cmdk";
 
+import { useCommandPalette } from "@/components/dashboard/command-palette-context";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/roles";
 
@@ -11,25 +12,47 @@ type Props = {
   role: Role;
 };
 
-export function CommandPalette({ role }: Props) {
-  const [open, setOpen] = useState(false);
-  const router = useRouter();
+function scrollToDashboardSection(hash: string) {
+  const id = hash.startsWith("#") ? hash.slice(1) : hash;
+  requestAnimationFrame(() => {
+    document.getElementById(id)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  });
+}
 
-  const go = useCallback((hash: string) => {
-    setOpen(false);
-    router.push(`/dashboard${hash}`);
-  }, [router]);
+export function CommandPalette({ role }: Props) {
+  const { open, setOpen, toggle } = useCommandPalette();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const go = useCallback(
+    (hash: string) => {
+      setOpen(false);
+      const target = `/dashboard${hash}`;
+      const onDashboard =
+        pathname === "/dashboard" || (pathname?.startsWith("/dashboard/") ?? false);
+      if (onDashboard) {
+        router.replace(target, { scroll: false });
+        scrollToDashboardSection(hash);
+      } else {
+        router.push(target);
+      }
+    },
+    [pathname, router, setOpen]
+  );
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setOpen((o) => !o);
+        toggle();
       }
     };
     globalThis.window?.addEventListener("keydown", down);
     return () => globalThis.window?.removeEventListener("keydown", down);
-  }, []);
+  }, [toggle]);
 
   if (role === "client") {
     return null;
@@ -44,7 +67,7 @@ export function CommandPalette({ role }: Props) {
         className="text-muted-foreground hidden md:inline-flex"
         onClick={() => setOpen(true)}
       >
-        Search…
+        Search or ask…
         <kbd className="bg-muted ml-2 rounded px-1.5 py-0.5 text-[10px] font-medium">
           ⌘K
         </kbd>
@@ -58,13 +81,54 @@ export function CommandPalette({ role }: Props) {
         >
           <Command className="bg-popover text-popover-foreground border-border w-full max-w-lg overflow-hidden rounded-xl border shadow-lg">
             <Command.Input
-              placeholder="Go to…"
+              placeholder="Try: expiring, risk, report, weekly…"
               className="border-input w-full border-b px-4 py-3 text-sm outline-none"
             />
             <Command.List className="max-h-72 overflow-y-auto p-2">
               <Command.Empty className="text-muted-foreground py-6 text-center text-sm">
                 No results.
               </Command.Empty>
+              <Command.Group
+                heading="Quick actions"
+                className="text-muted-foreground px-2 py-1.5 text-xs font-medium"
+              >
+                <Command.Item
+                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  keywords={[
+                    "show",
+                    "expiring",
+                    "licences",
+                    "licenses",
+                    "30",
+                    "days",
+                    "radar"
+                  ]}
+                  onSelect={() => go("#section-expiry-radar")}
+                >
+                  Show expiring licences
+                </Command.Item>
+                <Command.Item
+                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  keywords={["open", "risk", "overview", "kpi", "attention"]}
+                  onSelect={() => go("#section-overview")}
+                >
+                  Open risk overview
+                </Command.Item>
+                <Command.Item
+                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  keywords={["generate", "report", "pdf", "export", "download", "email"]}
+                  onSelect={() => go("#section-reports")}
+                >
+                  Generate report
+                </Command.Item>
+                <Command.Item
+                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  keywords={["weekly", "insight", "digest", "summary"]}
+                  onSelect={() => go("#section-weekly-insight")}
+                >
+                  View weekly insight
+                </Command.Item>
+              </Command.Group>
               <Command.Group heading="Dashboard" className="text-muted-foreground px-2 py-1.5 text-xs font-medium">
                 <Command.Item
                   className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
@@ -95,6 +159,12 @@ export function CommandPalette({ role }: Props) {
                   onSelect={() => go("#section-reports")}
                 >
                   Reports
+                </Command.Item>
+                <Command.Item
+                  className="aria-selected:bg-accent cursor-pointer rounded-md px-2 py-2 text-sm"
+                  onSelect={() => go("#section-weekly-insight")}
+                >
+                  Weekly insight
                 </Command.Item>
               </Command.Group>
               {role === "owner" ? (

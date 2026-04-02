@@ -104,8 +104,42 @@ export const listDigestForPolicy = query({
     const rows = await ctx.db.query("userPreferences").take(lim);
     return rows.map((r) => ({
       userId: r.userId,
-      digest: r.digest
+      orgId: r.orgId,
+      digest: r.digest,
+      consents: r.consents,
+      lastNotifiedAt: r.lastNotifiedAt,
+      weeklySummarySnippet: r.weeklySummarySnippet
     }));
+  }
+});
+
+export const setLastNotifiedAt = mutation({
+  args: {
+    secret: v.string(),
+    userId: v.string(),
+    lastNotifiedAt: v.number()
+  },
+  handler: async (ctx, args) => {
+    assertJobSecret(args.secret);
+    const existing = await ctx.db
+      .query("userPreferences")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .first();
+    const now = Date.now();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        lastNotifiedAt: args.lastNotifiedAt,
+        updatedAt: now
+      });
+      return { ok: true as const };
+    }
+    await ctx.db.insert("userPreferences", {
+      userId: args.userId,
+      version: 1,
+      lastNotifiedAt: args.lastNotifiedAt,
+      updatedAt: now
+    });
+    return { ok: true as const };
   }
 });
 

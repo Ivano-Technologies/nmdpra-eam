@@ -17,9 +17,11 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
+import { DashboardCommandBar } from "@/components/dashboard/dashboard-command-bar";
 import { ClientDashboardPlaceholder } from "@/components/dashboard/client-dashboard-placeholder";
 import { DashboardCustomizePanel } from "@/components/dashboard/dashboard-customize-panel";
 import { DigestPreferencesCard } from "@/components/dashboard/digest-preferences-card";
@@ -60,6 +62,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useUserPreferences } from "@/hooks/use-user-preferences";
 import { mergeDashboardLayout } from "@/lib/dashboard-defaults";
+import { illustrativeKpiTrend } from "@/lib/kpi-illustrative-trend";
 import {
   filterMvpRows,
   filterRiskRows,
@@ -144,11 +147,11 @@ function RiskInsightBanner({ mvp }: { mvp: MvpReportResponse }) {
     return null;
   }
   return (
-    <div className="border-border bg-muted/50 rounded-xl border px-4 py-3 text-sm shadow-sm transition-shadow duration-150">
+    <div className="border-border bg-muted/50 rounded-xl border px-4 py-4 text-sm shadow-sm transition-shadow duration-150 ring-1 ring-amber-500/15">
       <p className="text-foreground font-medium">Risk insight</p>
       <ul className="text-muted-foreground mt-2 space-y-1.5">
         {n > 0 ? (
-          <li className="flex gap-2">
+          <li className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-amber-600 dark:text-amber-400" aria-hidden>
               !
             </span>
@@ -156,14 +159,22 @@ function RiskInsightBanner({ mvp }: { mvp: MvpReportResponse }) {
               <span className="text-foreground font-medium">Attention: </span>
               {n} licence{n === 1 ? "" : "s"} require attention within 30 days
             </span>
+            <Button variant="link" className="text-brand-gold h-auto p-0 text-sm" asChild>
+              <Link href="#section-expiry-radar">Review expiries →</Link>
+            </Button>
           </li>
         ) : null}
         {top ? (
-          <li>
-            <span className="text-foreground font-medium">
-              Highest risk vendor:{" "}
+          <li className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>
+              <span className="text-foreground font-medium">
+                Highest risk vendor:{" "}
+              </span>
+              {top.vendorName} (score: {top.riskScore})
             </span>
-            {top.vendorName} (score: {top.riskScore})
+            <Button variant="link" className="text-brand-gold h-auto p-0 text-sm" asChild>
+              <Link href="#section-risk-ranking">View risk table →</Link>
+            </Button>
           </li>
         ) : null}
       </ul>
@@ -230,14 +241,15 @@ const kpiToneClass: Record<
 };
 
 const cardLift =
-  "transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/30";
+  "transition duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/30";
 
 function KpiCard({
   label,
   value,
   hint,
   tone = "gold",
-  delta
+  delta,
+  emphasis = false
 }: {
   label: string;
   value: number | string;
@@ -245,6 +257,8 @@ function KpiCard({
   tone?: keyof typeof kpiToneClass;
   /** Optional period-over-period hint (wire when API provides deltas). */
   delta?: { text: string; positive: boolean };
+  /** Larger value + subtle ring for high-priority metrics (risk / expiry). */
+  emphasis?: boolean;
 }) {
   const labelText = (
     <span className="text-xs uppercase tracking-wide text-gray-400">{label}</span>
@@ -261,13 +275,21 @@ function KpiCard({
   );
   return (
     <Card
-      className={`border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
+      className={`border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10 ${
+        emphasis && tone === "critical"
+          ? "ring-1 ring-red-500/30 shadow-red-950/20"
+          : emphasis
+            ? "ring-1 ring-amber-500/25"
+            : ""
+      }`}
     >
       <CardHeader className="space-y-1 pb-2">
         {labelEl}
         <div className="flex flex-wrap items-baseline gap-2">
           <CardTitle
-            className={`font-heading text-3xl tabular-nums leading-tight ${kpiToneClass[tone]}`}
+            className={`font-heading tabular-nums leading-tight ${kpiToneClass[tone]} ${
+              emphasis ? "text-4xl md:text-5xl" : "text-3xl"
+            }`}
           >
             {value}
           </CardTitle>
@@ -276,6 +298,7 @@ function KpiCard({
               className={
                 delta.positive ? "text-xs text-green-400" : "text-xs text-red-400"
               }
+              title="Illustrative trend (demo — replace when historical API is available)"
             >
               {delta.text}
             </span>
@@ -299,11 +322,13 @@ function WeeklyInsightCard({
   const line = snippet
     ? snippet
     : mvp
-      ? `Current snapshot: ${mvp.summary.critical} critical, ${mvp.summary.expired} expired licences (live data).`
-      : null;
-  if (!line) {
-    return null;
-  }
+      ? mvp.summary.expiringIn30Days > 0
+        ? `${mvp.summary.expiringIn30Days} licence${mvp.summary.expiringIn30Days === 1 ? "" : "s"} will expire within 30 days — ${mvp.summary.critical} ${mvp.summary.critical === 1 ? "is" : "are"} high-risk.`
+        : `Current snapshot: ${mvp.summary.critical} critical, ${mvp.summary.expired} expired licences (live data).`
+      : "Weekly summaries and risk signals will appear here once licence data is loaded — connect uploads or wait for the next digest.";
+  const showHighRiskCta = Boolean(mvp && mvp.summary.critical > 0);
+  const showExpiryCta =
+    Boolean(mvp && mvp.summary.expiringIn30Days > 0) && !showHighRiskCta;
   return (
     <Card
       className={`border border-white/5 bg-[#111827]/90 shadow-lg shadow-black/20 ${cardLift}`}
@@ -315,6 +340,15 @@ function WeeklyInsightCard({
           Weekly insight
         </CardTitle>
         <CardDescription className="text-sm">{line}</CardDescription>
+        {showHighRiskCta ? (
+          <Button variant="link" className="text-emerald-400 mt-2 h-auto p-0 text-sm hover:text-emerald-300" asChild>
+            <Link href="#section-risk-ranking">Review high-risk →</Link>
+          </Button>
+        ) : showExpiryCta ? (
+          <Button variant="link" className="text-brand-gold mt-2 h-auto p-0 text-sm" asChild>
+            <Link href="#section-expiry-radar">Review expiries →</Link>
+          </Button>
+        ) : null}
       </CardHeader>
     </Card>
   );
@@ -665,21 +699,30 @@ export function DashboardView() {
                 label="Total licences"
                 value={displayMvp.summary.total}
                 hint="All licence rows in the current filtered set"
+                delta={illustrativeKpiTrend("Total licences", displayMvp.summary.total)}
               />
               <KpiCard
                 label="Expiring soon"
                 value={displayMvp.summary.expiringIn30Days}
                 hint="Due within 30 days (from row days-to-expiry)"
+                tone="warning"
+                emphasis
+                delta={illustrativeKpiTrend(
+                  "Expiring soon",
+                  displayMvp.summary.expiringIn30Days
+                )}
               />
               <KpiCard
                 label="Expired"
                 value={displayMvp.summary.expired}
                 hint="Past due"
+                delta={illustrativeKpiTrend("Expired", displayMvp.summary.expired)}
               />
               <KpiCard
                 label="Active %"
                 value={`${activePct}%`}
                 hint="Share in “safe” band within current filters"
+                delta={illustrativeKpiTrend("Active %", activePct)}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -688,24 +731,38 @@ export function DashboardView() {
                 value={displayMvp.summary.critical}
                 hint="Secondary KPI"
                 tone="critical"
+                emphasis
+                delta={illustrativeKpiTrend(
+                  "Critical (≤30 days)",
+                  displayMvp.summary.critical
+                )}
               />
               <KpiCard
                 label="Warning (31–60 days)"
                 value={displayMvp.summary.warning}
                 hint="Secondary KPI"
                 tone="warning"
+                delta={illustrativeKpiTrend(
+                  "Warning (31–60 days)",
+                  displayMvp.summary.warning
+                )}
               />
               <KpiCard
                 label="Safe (&gt;60 days)"
                 value={displayMvp.summary.safe}
                 hint="Secondary KPI"
                 tone="positive"
+                delta={illustrativeKpiTrend(
+                  "Safe (>60 days)",
+                  displayMvp.summary.safe
+                )}
               />
               <KpiCard
                 label="Vendors"
                 value={vendorCount}
                 hint="Distinct vendors in filtered report"
                 tone="gold"
+                delta={illustrativeKpiTrend("Vendors", vendorCount)}
               />
             </div>
             <p className="text-sm text-muted-foreground">
@@ -772,16 +829,25 @@ export function DashboardView() {
             </CardContent>
           </Card>
         );
+      case "weekly-insight":
+        return (
+          <div key="weekly-insight" id="section-weekly-insight" className="scroll-mt-28">
+            <WeeklyInsightCard
+              mvp={mvpRaw}
+              snippet={preferences?.weeklySummarySnippet}
+            />
+          </div>
+        );
       case "risk-ranking":
         return (
           <Card
             key="risk-ranking"
             id="section-risk-ranking"
-            className={`scroll-mt-28 border border-white/5 bg-[#111827] shadow-lg shadow-black/20 ${cardLift} hover:border-white/10`}
+            className={`scroll-mt-28 min-h-[22rem] border border-white/5 bg-[#111827] shadow-lg shadow-black/30 shadow-red-950/10 ${cardLift} ring-1 ring-white/5 hover:border-white/10`}
           >
             <CardHeader>
               <CardTitle
-                className={`font-heading text-xl font-medium text-brand-gold ${goldGlow}`}
+                className={`font-heading text-2xl font-semibold text-brand-gold md:text-3xl ${goldGlow}`}
               >
                 Risk ranking
               </CardTitle>
@@ -910,10 +976,6 @@ export function DashboardView() {
               saving={digestSaving}
               onSave={saveDigest}
             />
-            <WeeklyInsightCard
-              mvp={mvpRaw}
-              snippet={preferences?.weeklySummarySnippet}
-            />
           </div>
         );
       default:
@@ -944,6 +1006,7 @@ export function DashboardView() {
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
             Licence intelligence overview — data from live API.
           </p>
+          <DashboardCommandBar />
           <TrustStrip generatedAtIso={mvpRaw?.generatedAt} role={role} />
           {mvpRaw && !isLoading ? (
             <p className="text-foreground mt-2 flex flex-wrap items-center gap-2 text-sm font-medium">

@@ -1,15 +1,18 @@
 import { ConvexHttpClient } from "convex/browser";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 
 import { buildComplianceReportHtml } from "@/lib/compliance-report-email";
 import { verifyCronRequest } from "@/lib/cron-auth";
-import { shouldSendNotification } from "@/lib/notification-policy";
+import { getResend, getResendFromEmail } from "@/lib/resend";
 import {
   listSubscriptionsQuery,
   mvpReportDataQuery,
   setLastSentMutation
 } from "@/lib/internal-convex-refs";
+import {
+  decisionToLegacyEmailAllow,
+  shouldSendNotification
+} from "@/server/notifications/policy";
 import type { MvpReportResponse } from "@/types/api";
 
 export const runtime = "nodejs";
@@ -23,9 +26,10 @@ async function handleSendReports(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const resendKey = process.env.RESEND_API_KEY?.trim();
-  const from = process.env.RESEND_FROM_EMAIL?.trim();
-  if (!resendKey || !from) {
+  if (
+    !process.env.RESEND_API_KEY?.trim() ||
+    !process.env.RESEND_FROM_EMAIL?.trim()
+  ) {
     return NextResponse.json(
       { error: "Resend not configured (RESEND_API_KEY, RESEND_FROM_EMAIL)" },
       { status: 503 }
@@ -40,7 +44,8 @@ async function handleSendReports(req: Request) {
 
   const client = new ConvexHttpClient(convexUrl);
   const subs = await client.query(listSubscriptionsQuery, { secret: jobSecret });
-  const resend = new Resend(resendKey);
+  const resend = getResend();
+  const from = getResendFromEmail();
   const now = Date.now();
   let sent = 0;
   const errors: string[] = [];
@@ -51,11 +56,12 @@ async function handleSendReports(req: Request) {
     }
 
     try {
-      const policy = shouldSendNotification({
-        digest: undefined,
-        type: "scheduled_report",
-        timestampMs: now
-      });
+      const decision = shouldSendNotification(
+        null,
+        { type: "scheduled_report" },
+        new Date(now)
+      );
+      const policy = decisionToLegacyEmailAllow(decision);
       if (!policy.allow) {
         errors.push(`${sub.email}: policy:${policy.reason}`);
         continue;

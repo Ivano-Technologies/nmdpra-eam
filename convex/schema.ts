@@ -98,7 +98,19 @@ export default defineSchema({
     milestones: v.optional(v.any()),
     weeklySummarySnippet: v.optional(v.string()),
     weeklySummaryAt: v.optional(v.number()),
+    /** Throttle notification dispatch (cron). */
+    lastNotifiedAt: v.optional(v.number()),
     updatedAt: v.number()
+  }).index("by_user", ["userId"]),
+
+  /** In-app notifications (job or authenticated writers). */
+  notifications: defineTable({
+    userId: v.string(),
+    title: v.string(),
+    body: v.string(),
+    read: v.boolean(),
+    createdAt: v.number(),
+    kind: v.optional(v.string())
   }).index("by_user", ["userId"]),
 
   /** Proof of completed erasure; blocks repeat until new prefs row clears it (see upsertPatch). */

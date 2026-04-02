@@ -9,9 +9,17 @@ dist/
 !.env.example
 .env.local
 pnpm-debug.log*
-.cursor/
+# Cursor local state (allow committed project MCP config)
+.cursor/**
+!.cursor/mcp.json
 .github/
 convex/_generated/
 data/
 eslint-rules/
 eslint.config.mjs
+
+# Playwright (apps/web)
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
+playwright/.cache/

@@ -5,6 +5,7 @@ export type DashboardSectionId =
   | "risk-ranking"
   | "reports"
   | "data-upload"
+  | "weekly-insight"
   | "owner-panel";
 
 export type DashboardLayout = {

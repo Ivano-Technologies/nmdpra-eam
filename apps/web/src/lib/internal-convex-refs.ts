@@ -57,6 +57,26 @@ export const userPreferencesListDigestForPolicyQuery = makeFunctionReference<"qu
   "userPreferences:listDigestForPolicy"
 );
 
+export const userPreferencesSetLastNotifiedAtMutation = makeFunctionReference<"mutation">(
+  "userPreferences:setLastNotifiedAt"
+);
+
+export const notificationsCreateMutation = makeFunctionReference<"mutation">(
+  "notifications:create"
+);
+
+export const notificationsListForUserQuery = makeFunctionReference<"query">(
+  "notifications:listForUser"
+);
+
+export const notificationsMarkReadMutation = makeFunctionReference<"mutation">(
+  "notifications:markRead"
+);
+
+export const notificationsMarkAllReadMutation = makeFunctionReference<"mutation">(
+  "notifications:markAllRead"
+);
+
 export const userPreferencesUpsertMutation = makeFunctionReference<"mutation">(
   "userPreferences:upsertPatch"
 );
