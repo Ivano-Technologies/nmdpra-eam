@@ -9,9 +9,13 @@ dist/
 !.env.example
 .env.local
 pnpm-debug.log*
-# Cursor local state (allow committed project MCP config)
+# Cursor local state (allow committed project MCP config at repo root)
 .cursor/**
 !.cursor/mcp.json
+apps/web/.cursor/
+
+# MCP server descriptors (workspace-local)
+mcps/
 .github/
 convex/_generated/
 data/
