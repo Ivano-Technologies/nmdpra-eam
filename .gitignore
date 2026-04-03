@@ -27,3 +27,5 @@ apps/web/test-results/
 apps/web/playwright-report/
 apps/web/blob-report/
 playwright/.cache/
+apps/web/playwright/.auth/
+apps/web/e2e/progress/*.png
