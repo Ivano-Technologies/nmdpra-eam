@@ -244,12 +244,18 @@ importers:
 
   packages/report-core:
     dependencies:
+      '@sparticuz/chromium':
+        specifier: ^143.0.4
+        version: 143.0.4
       canvas:
         specifier: ^2.11.2
         version: 2.11.2
       puppeteer:
         specifier: ^24.11.2
         version: 24.40.0(typescript@5.9.3)
+      puppeteer-core:
+        specifier: ^24.40.0
+        version: 24.40.0
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -300,6 +306,9 @@ importers:
 
   services/reporting:
     dependencies:
+      '@rmlis/report-core':
+        specifier: workspace:*
+        version: link:../../packages/report-core
       '@rmlis/resend-client':
         specifier: workspace:*
         version: link:../../packages/resend-client

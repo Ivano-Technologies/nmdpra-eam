@@ -24,6 +24,7 @@
     }
   },
   "dependencies": {
+    "@rmlis/report-core": "workspace:*",
     "@rmlis/resend-client": "workspace:*",
     "@rmlis/shared": "workspace:*",
     "@sparticuz/chromium": "^143.0.4",

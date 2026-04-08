@@ -1,8 +1,9 @@
-import { generatePdfFromHtml } from "../pdf/generatePdf";
+import { renderReportToPDF } from "@rmlis/report-core";
+
 import type { MvpReportInput } from "./renderMvpReport";
-import { renderMvpReportHtml } from "./renderMvpReport";
+import { mvpInputToReport } from "./mvpInputToReport";
 
 export const buildMvpPdf = async (data: MvpReportInput): Promise<Buffer> => {
-  const html = renderMvpReportHtml(data);
-  return generatePdfFromHtml(html);
+  const report = mvpInputToReport(data);
+  return renderReportToPDF(report);
 };

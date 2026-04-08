@@ -13,6 +13,7 @@ const backendApiOrigin =
   process.env.BACKEND_API_ORIGIN?.trim().replace(/\/$/, "") ?? "";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium", "canvas"],
   transpilePackages: [
     "@rmlis/shared",
     "@rmlis/resend-client",

@@ -8,6 +8,9 @@ export const config = {
   }
 };
 
+/** Vercel / Fluid: allow time for Chromium + chart render (default is often 10s). */
+export const maxDuration = 60;
+
 /**
  * PDF when `BACKEND_API_ORIGIN` is unset (no rewrite to Express).
  * Mirrors {@link apps/api/src/controllers/reportController.ts} `getMvpPdf`.
