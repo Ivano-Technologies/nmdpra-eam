@@ -22,9 +22,12 @@ data/
 eslint-rules/
 eslint.config.mjs
 
-# Playwright (apps/web)
+# Playwright (apps/web + root MVP audit)
 apps/web/test-results/
 apps/web/playwright-report/
+playwright-report-mvp/
+test-results/
+tests/mvp-audit/.auth/
 apps/web/blob-report/
 playwright/.cache/
 apps/web/playwright/.auth/
