@@ -45,11 +45,12 @@ test.describe("Reports & PDF (authenticated)", () => {
     const last = await request.get("/api/__e2e__/last-resend");
     expect(last.status()).toBe(200);
     const data = (await last.json()) as {
-      payload: { to?: string; subject?: string; text?: string } | null;
+      emails: Array<{ to?: string[]; subject?: string; html?: string }>;
     };
-    expect(data.payload).toBeTruthy();
-    expect(data.payload?.to).toContain("mvp-audit@example.com");
-    expect(data.payload?.subject).toMatch(/license report/i);
+    expect(data.emails.length).toBeGreaterThanOrEqual(1);
+    const payload = data.emails[data.emails.length - 1];
+    expect(payload.to).toContain("mvp-audit@example.com");
+    expect(payload.subject).toMatch(/Institutional Report/i);
   });
 
   test("reports section UI screenshots", async ({ page }) => {

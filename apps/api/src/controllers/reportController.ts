@@ -1,9 +1,10 @@
 import type { Request, Response } from "express";
 import {
-  getResendClient,
   getResendFromEmail,
-  isResendConfigured
+  isResendConfigured,
+  sendValidatedEmail
 } from "@rmlis/resend-client";
+import { buildReportEmail } from "@rmlis/resend-client/reportEmail";
 
 import { buildMvpPdf } from "@rmlis/reporting/mvp";
 
@@ -48,7 +49,7 @@ export const postMvpEmail = async (req: Request, res: Response): Promise<void> =
 
   if (!isResendConfigured()) {
     res.status(503).json({
-      error: "Email not configured (RESEND_API_KEY, RESEND_FROM_EMAIL or MOCK_RESEND=1)",
+      error: "Email not configured (RESEND_API_KEY, RESEND_FROM_EMAIL, or EMAIL_MODE=mock)",
       code: "EMAIL_NOT_CONFIGURED"
     });
     return;
@@ -89,14 +90,25 @@ export const postMvpEmail = async (req: Request, res: Response): Promise<void> =
   }
 
   const from = getResendFromEmail();
-  const resend = getResendClient();
-  const { data: sent, error } = await resend.emails.send({
-    from,
-    to,
-    subject: `Techivano license report — ${data.generatedAt.slice(0, 10)}`,
-    text: "Attached: Regulatory Monitoring & License Intelligence MVP report (PDF).",
-    attachments: [{ filename: "rmlis-mvp-report.pdf", content: pdf }]
+  const reportId = data.generatedAt.slice(0, 10);
+  const origin = `${req.protocol}://${req.get("host")}`;
+  const message = buildReportEmail({
+    reportId,
+    recipient: to,
+    downloadUrl: `${origin}/api/reports/mvp.pdf?reportId=${encodeURIComponent(reportId)}`
   });
+  const testRunIdHeader =
+    typeof req.headers["x-test-run-id"] === "string"
+      ? req.headers["x-test-run-id"]
+      : undefined;
+  const { data: sent, error } = await sendValidatedEmail(
+    {
+      from,
+      ...message,
+      attachments: [{ filename: "rmlis-mvp-report.pdf", content: pdf }]
+    },
+    { testRunId: testRunIdHeader }
+  );
 
   if (error) {
     res.status(502).json({ error: error.message, code: "EMAIL_SEND_FAILED" });

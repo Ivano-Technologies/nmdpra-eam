@@ -111,6 +111,7 @@ export default defineConfig({
     : {
         command: "pnpm exec next dev",
         url: baseURL,
+        env: { ...process.env, EMAIL_MODE: process.env.EMAIL_MODE ?? "mock" },
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
         stdout: "pipe",

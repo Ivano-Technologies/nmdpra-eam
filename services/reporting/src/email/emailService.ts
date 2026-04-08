@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import { getResendFromEmail, sendValidatedEmail } from "@rmlis/resend-client";
 
 export type SendReportPdfParams = {
   to: string;
@@ -8,18 +8,16 @@ export type SendReportPdfParams = {
 };
 
 export const sendReportPdf = async (params: SendReportPdfParams): Promise<{ id: string | null }> => {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  const from = process.env.RESEND_FROM_EMAIL?.trim();
-  if (!apiKey || !from) {
-    throw new Error("RESEND_API_KEY and RESEND_FROM_EMAIL are required to send email");
+  const from = getResendFromEmail();
+  if (!process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_MODE !== "mock") {
+    throw new Error("RESEND_API_KEY is required unless EMAIL_MODE=mock");
   }
 
-  const resend = new Resend(apiKey);
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await sendValidatedEmail({
     from,
     to: params.to,
     subject: params.subject ?? "NMDPRA license compliance report",
-    text: "Attached: NMDPRA licence compliance report (PDF).",
+    html: "<p>Attached: NMDPRA licence compliance report (PDF).</p>",
     attachments: [
       {
         filename: params.filename ?? "nmdpra-license-report.pdf",

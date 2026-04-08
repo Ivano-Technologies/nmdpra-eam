@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server";
 
-import {
-  getLastMockResendPayload,
-  isMockResendEnabled
-} from "@rmlis/resend-client";
+import { getMockEmailsByTestRunId } from "@rmlis/resend-client";
 
-/**
- * Dev/E2E only: last email payload captured when MOCK_RESEND=1 or E2E_MAIL_MOCK=1.
- */
-export async function GET() {
-  if (!isMockResendEnabled()) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  return NextResponse.json({ payload: getLastMockResendPayload() });
+/** Dev/E2E only: captured mock payloads (shared store with App Router send path). */
+export async function GET(req: Request) {
+  const testRunId = req.headers.get("x-test-run-id");
+  const emails = getMockEmailsByTestRunId(testRunId);
+  return NextResponse.json({ emails });
 }

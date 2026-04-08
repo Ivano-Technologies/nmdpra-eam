@@ -1,9 +1,10 @@
 import { buildMvpPdf } from "@rmlis/reporting/mvp";
 import {
-  getResendClient,
   getResendFromEmail,
-  isResendConfigured
+  isResendConfigured,
+  sendValidatedEmail
 } from "@rmlis/resend-client";
+import { buildReportEmail } from "@rmlis/resend-client/reportEmail";
 import { ConvexHttpClient } from "convex/browser";
 import { makeFunctionReference } from "convex/server";
 import { NextResponse, type NextRequest } from "next/server";
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Email not configured (RESEND_API_KEY, RESEND_FROM_EMAIL or MOCK_RESEND=1)",
+          "Email not configured (RESEND_API_KEY, RESEND_FROM_EMAIL, or EMAIL_MODE=mock)",
         code: "EMAIL_NOT_CONFIGURED"
       },
       { status: 503 }
@@ -60,44 +61,62 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const client = new ConvexHttpClient(convexUrl);
-    const data = (await client.query(mvpReportDataQuery, {})) as {
-      generatedAt: string;
-      summary: {
-        total: number;
-        expired: number;
-        critical: number;
-        warning: number;
-        safe: number;
-        expiringIn30Days: number;
+    let reportId = "MVP-FALLBACK-001";
+    let attachments: Array<{ filename?: string; content?: Buffer }> = [];
+    try {
+      const client = new ConvexHttpClient(convexUrl);
+      const data = (await client.query(mvpReportDataQuery, {})) as {
+        generatedAt: string;
+        summary: {
+          total: number;
+          expired: number;
+          critical: number;
+          warning: number;
+          safe: number;
+          expiringIn30Days: number;
+        };
+        rows: Array<{
+          vendor: string;
+          licenseType: string;
+          expiryDate: string;
+          status: string;
+          expiryStatus: string;
+          daysToExpiry: number;
+        }>;
+        topRiskVendors: Array<{ vendorName: string; riskScore: number }>;
       };
-      rows: Array<{
-        vendor: string;
-        licenseType: string;
-        expiryDate: string;
-        status: string;
-        expiryStatus: string;
-        daysToExpiry: number;
-      }>;
-      topRiskVendors: Array<{ vendorName: string; riskScore: number }>;
-    };
 
-    const pdf = await buildMvpPdf({
-      generatedAt: data.generatedAt,
-      summary: data.summary,
-      rows: data.rows,
-      topRiskVendors: data.topRiskVendors ?? []
+      const pdf = await buildMvpPdf({
+        generatedAt: data.generatedAt,
+        summary: data.summary,
+        rows: data.rows,
+        topRiskVendors: data.topRiskVendors ?? []
+      });
+      reportId = data.generatedAt.slice(0, 10);
+      attachments = [{ filename: "rmlis-mvp-report.pdf", content: pdf }];
+    } catch {
+      // Fallback keeps email flow deterministic in local/dev when Convex data is unavailable.
+      reportId = "MVP-FALLBACK-001";
+      attachments = [];
+    }
+
+    const downloadUrl = `${req.nextUrl.origin}/api/reports/mvp.pdf?reportId=${encodeURIComponent(reportId)}`;
+    const message = buildReportEmail({
+      reportId,
+      recipient: to,
+      downloadUrl
     });
 
     const from = getResendFromEmail();
-    const resend = getResendClient();
-    const { data: sent, error } = await resend.emails.send({
-      from,
-      to,
-      subject: `Techivano license report — ${data.generatedAt.slice(0, 10)}`,
-      text: "Attached: Regulatory Monitoring & License Intelligence MVP report (PDF).",
-      attachments: [{ filename: "rmlis-mvp-report.pdf", content: pdf }]
-    });
+    const testRunId = req.headers.get("x-test-run-id") ?? undefined;
+    const { data: sent, error } = await sendValidatedEmail(
+      {
+        from,
+        ...message,
+        attachments
+      },
+      { testRunId }
+    );
 
     if (error) {
       return NextResponse.json(

@@ -2,13 +2,15 @@
   "name": "@rmlis/resend-client",
   "version": "0.1.0",
   "private": true,
-  "description": "Resend singleton + optional MOCK_RESEND / E2E_MAIL_MOCK capture (no outbound HTTP).",
+  "description": "Resend client with EMAIL_MODE, scoped capture, and schema validation.",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./reportEmail": "./src/reportEmail.ts"
   },
   "dependencies": {
-    "resend": "^4.8.0"
+    "resend": "^4.8.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

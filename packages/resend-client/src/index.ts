@@ -1,62 +1,208 @@
-import { Resend } from "resend";
+import { AsyncLocalStorage } from "node:async_hooks";
 
-/** When set, Resend HTTP is not called; payloads are recorded for E2E assertions. */
-export function isMockResendEnabled(): boolean {
-  return (
-    process.env.MOCK_RESEND === "1" || process.env.E2E_MAIL_MOCK === "1"
-  );
+import { Resend } from "resend";
+import { z } from "zod";
+
+export type EmailPayload = {
+  to: string[];
+  subject: string;
+  html: string;
+};
+
+export const EmailSchema = z.object({
+  to: z.array(z.string().email()),
+  subject: z.string().min(1),
+  html: z.string().min(1)
+});
+
+const LEGACY_TEST_RUN_ID = "__legacy__";
+const MAX_CAPTURED_EMAILS_PER_RUN = 100;
+
+/** Next.js may load this package in multiple bundles (App vs Pages); share one Map via globalThis. */
+const EMAIL_STORE_KEY = "__rmlis_resend_email_store__" as const;
+
+function getEmailStore(): Map<string, EmailPayload[]> {
+  const g = globalThis as typeof globalThis & {
+    [EMAIL_STORE_KEY]?: Map<string, EmailPayload[]>;
+  };
+  if (!g[EMAIL_STORE_KEY]) {
+    g[EMAIL_STORE_KEY] = new Map<string, EmailPayload[]>();
+  }
+  return g[EMAIL_STORE_KEY];
 }
 
-export type MockResendPayload = {
+const testRunContext = new AsyncLocalStorage<string>();
+
+let cachedClient: Resend | null = null;
+
+function getEmailMode(): "mock" | "live" {
+  const raw = process.env.EMAIL_MODE?.trim().toLowerCase();
+  if (raw === "mock" || raw === "live") {
+    return raw;
+  }
+  // Backward-compat alias support.
+  if (process.env.MOCK_RESEND === "1" || process.env.E2E_MAIL_MOCK === "1") {
+    return "mock";
+  }
+  if (process.env.NODE_ENV === "test") {
+    return "mock";
+  }
+  return "live";
+}
+
+/** Backward-compatible helper retained for existing call sites. */
+export function isMockResendEnabled(): boolean {
+  return getEmailMode() === "mock";
+}
+
+export function resolveTestRunId(value?: string | null): string {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : LEGACY_TEST_RUN_ID;
+}
+
+export function runWithTestRunId<T>(
+  testRunId: string | undefined,
+  fn: () => Promise<T>
+): Promise<T> {
+  return testRunContext.run(resolveTestRunId(testRunId), fn);
+}
+
+function getCurrentTestRunId(): string {
+  return resolveTestRunId(testRunContext.getStore());
+}
+
+function normalizeRecipients(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v));
+  }
+  return [];
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function toEmailPayload(raw: Record<string, unknown>): EmailPayload {
+  const payload: EmailPayload = {
+    to: normalizeRecipients(raw.to),
+    subject: String(raw.subject ?? ""),
+    html:
+      typeof raw.html === "string" && raw.html.trim().length > 0
+        ? raw.html
+        : typeof raw.text === "string"
+          ? `<p>${escapeHtml(raw.text)}</p>`
+          : ""
+  };
+  return validateEmailPayload(payload);
+}
+
+export function validateEmailPayload(payload: EmailPayload): EmailPayload {
+  const parsed = EmailSchema.safeParse(payload);
+  if (parsed.success) {
+    return parsed.data;
+  }
+  const details = parsed.error.issues
+    .map((issue) => `${issue.path.join(".") || "payload"}: ${issue.message}`)
+    .join("; ");
+  throw new Error(`Invalid EmailPayload: ${details}`);
+}
+
+function appendEmail(payload: EmailPayload, testRunId?: string): void {
+  const store = getEmailStore();
+  const key = resolveTestRunId(testRunId ?? getCurrentTestRunId());
+  const next = [...(store.get(key) ?? []), payload];
+  if (next.length > MAX_CAPTURED_EMAILS_PER_RUN) {
+    next.splice(0, next.length - MAX_CAPTURED_EMAILS_PER_RUN);
+  }
+  store.set(key, next);
+}
+
+export function getMockEmailsByTestRunId(testRunId?: string | null): EmailPayload[] {
+  return [...(getEmailStore().get(resolveTestRunId(testRunId)) ?? [])];
+}
+
+/** Legacy helper preserved for compatibility. */
+export function getLastMockResendPayload(): EmailPayload | null {
+  const legacy = getMockEmailsByTestRunId(LEGACY_TEST_RUN_ID);
+  return legacy.length > 0 ? legacy[legacy.length - 1] : null;
+}
+
+/** Legacy helper preserved for compatibility. */
+export function getMockResendHistory(): EmailPayload[] {
+  return [...getEmailStore().values()].flat();
+}
+
+export function clearMockResendHistory(): void {
+  getEmailStore().clear();
+}
+
+function createMockResend(): Resend {
+  const send = async (raw: Record<string, unknown>) => {
+    return sendValidatedEmail(
+      {
+        from: String(raw.from ?? ""),
+        to:
+          typeof raw.to === "string" || Array.isArray(raw.to)
+            ? (raw.to as string | string[])
+            : "",
+        subject: String(raw.subject ?? ""),
+        html: typeof raw.html === "string" ? raw.html : undefined,
+        text: typeof raw.text === "string" ? raw.text : undefined,
+        attachments: raw.attachments as SendValidatedEmailInput["attachments"]
+      },
+      { testRunId: getCurrentTestRunId() }
+    );
+  };
+  return { emails: { send } } as unknown as Resend;
+}
+
+export type SendValidatedEmailInput = {
   from: string;
   to: string | string[];
   subject: string;
   html?: string;
   text?: string;
-  attachments?: Array<{ filename?: string; content?: unknown }>;
+  attachments?: Array<{ filename?: string; content?: string | Buffer }>;
 };
 
-let lastPayload: MockResendPayload | null = null;
-const history: MockResendPayload[] = [];
+export async function sendValidatedEmail(
+  input: SendValidatedEmailInput,
+  options?: { testRunId?: string }
+): Promise<{ data: { id: string | null } | null; error: { message: string } | null }> {
+  const payload = toEmailPayload(input as Record<string, unknown>);
+  const scopedTestRunId = options?.testRunId;
+  const forceMockForScopedRun =
+    typeof scopedTestRunId === "string" && scopedTestRunId.trim().length > 0;
 
-export function getLastMockResendPayload(): MockResendPayload | null {
-  return lastPayload;
-}
-
-export function getMockResendHistory(): MockResendPayload[] {
-  return [...history];
-}
-
-export function clearMockResendHistory(): void {
-  lastPayload = null;
-  history.length = 0;
-}
-
-function recordPayload(payload: MockResendPayload): void {
-  lastPayload = payload;
-  history.push(payload);
-  if (history.length > 40) {
-    history.shift();
+  if (isMockResendEnabled() || forceMockForScopedRun) {
+    const runId = resolveTestRunId(scopedTestRunId ?? getCurrentTestRunId());
+    appendEmail(payload, runId);
+    const runCount = getMockEmailsByTestRunId(runId).length;
+    return { data: { id: `mock-${runId}-${runCount}` }, error: null };
   }
-}
 
-function createMockResend(): Resend {
-  const send = async (raw: Record<string, unknown>) => {
-    const payload: MockResendPayload = {
-      from: String(raw.from ?? ""),
-      to: raw.to as string | string[],
-      subject: String(raw.subject ?? ""),
-      html: raw.html as string | undefined,
-      text: raw.text as string | undefined,
-      attachments: raw.attachments as MockResendPayload["attachments"]
-    };
-    recordPayload(payload);
-    return { data: { id: "mock-resend-id" }, error: null };
-  };
-  return { emails: { send } } as unknown as Resend;
-}
+  const resend = getResendClient();
+  const { data, error } = await resend.emails.send({
+    from: input.from,
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html,
+    attachments: input.attachments
+  });
 
-let cachedClient: Resend | null = null;
+  if (error) {
+    return { data: null, error: { message: error.message } };
+  }
+  return { data: { id: data?.id ?? null }, error: null };
+}
 
 /**
  * Singleton Resend client — real API or mock (captures payloads).

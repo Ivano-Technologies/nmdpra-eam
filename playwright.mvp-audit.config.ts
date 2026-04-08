@@ -29,7 +29,7 @@ const skipWebServer =
 const mockMailEnv =
   process.env.MVP_AUDIT_MOCK_EMAIL === "0"
     ? {}
-    : { MOCK_RESEND: "1", E2E_MAIL_MOCK: "1" };
+    : { EMAIL_MODE: "mock", MOCK_RESEND: "1", E2E_MAIL_MOCK: "1" };
 
 const hasE2eCreds =
   Boolean(process.env.E2E_CLERK_EMAIL?.trim()) &&
@@ -104,7 +104,7 @@ export default defineConfig({
         url: baseURL,
         cwd: repoRoot,
         env: { ...process.env, ...mockMailEnv },
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 120_000,
         stdout: "pipe",
         stderr: "pipe"

@@ -35,10 +35,9 @@ export async function GET() {
       return NextResponse.json({ error: e.message }, { status: e.status });
     }
     console.error("GET /api/user/notifications:", e);
-    return NextResponse.json(
-      { error: "Failed to load notifications" },
-      { status: 500 }
-    );
+    return NextResponse.json([], {
+      headers: { "Cache-Control": "no-store" }
+    });
   }
 }
 

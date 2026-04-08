@@ -3,7 +3,11 @@ import { NextResponse } from "next/server";
 
 import { buildComplianceReportHtml } from "@/lib/compliance-report-email";
 import { verifyCronRequest } from "@/lib/cron-auth";
-import { getResendClient, getResendFromEmail, isResendConfigured } from "@/lib/resend";
+import {
+  getResendFromEmail,
+  isResendConfigured,
+  sendValidatedEmail
+} from "@/lib/resend";
 import {
   listSubscriptionsQuery,
   mvpReportDataQuery,
@@ -30,7 +34,7 @@ async function handleSendReports(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Resend not configured (RESEND_API_KEY, RESEND_FROM_EMAIL or MOCK_RESEND=1)"
+          "Resend not configured (RESEND_API_KEY, RESEND_FROM_EMAIL, or EMAIL_MODE=mock)"
       },
       { status: 503 }
     );
@@ -44,7 +48,6 @@ async function handleSendReports(req: Request) {
 
   const client = new ConvexHttpClient(convexUrl);
   const subs = await client.query(listSubscriptionsQuery, { secret: jobSecret });
-  const resend = getResendClient();
   const from = getResendFromEmail();
   const now = Date.now();
   let sent = 0;
@@ -73,7 +76,7 @@ async function handleSendReports(req: Request) {
       })) as MvpReportResponse;
 
       const html = buildComplianceReportHtml(sub.orgId, report);
-      const { error } = await resend.emails.send({
+      const { error } = await sendValidatedEmail({
         from,
         to: sub.email,
         subject: `Ivano IQ compliance report — ${sub.orgId}`,

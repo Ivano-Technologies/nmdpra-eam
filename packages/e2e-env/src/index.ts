@@ -25,6 +25,7 @@ export function findRepoRoot(start = process.cwd()): string {
 export function envFilePathsForPlaywright(): string[] {
   const root = findRepoRoot();
   return [
+    path.join(root, ".env.test"),
     path.join(root, ".env.local"),
     path.join(root, "apps/web/.env.local"),
     path.join(root, "apps/web/.env.e2e.local")
@@ -99,6 +100,9 @@ export function applyPlaywrightTestEnv(): void {
     process.env.CLERK_PUBLISHABLE_KEY?.trim();
   if (pub && !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = pub;
+  }
+  if (!process.env.EMAIL_MODE) {
+    process.env.EMAIL_MODE = "mock";
   }
 
   logE2eEnvOnce();

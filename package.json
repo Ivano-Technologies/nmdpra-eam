@@ -9,6 +9,7 @@
     "test:e2e": "pnpm --filter @rmlis/web test:e2e",
     "test:e2e:deploy": "pnpm --filter @rmlis/web test:e2e:deploy",
     "test:mvp-audit": "pnpm --filter @rmlis/web exec playwright test --config ../../playwright.mvp-audit.config.ts",
+    "seed:e2e": "tsx scripts/seed-e2e-user.ts",
     "lint": "eslint convex",
     "lint:convex": "eslint convex",
     "dev": "pnpm --filter @rmlis/api dev",
@@ -24,10 +25,12 @@
   "license": "ISC",
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
-    "@rmlis/e2e-env": "workspace:*",
+    "@clerk/backend": "^3.2.7",
     "@convex-dev/eslint-plugin": "^1.1.1",
+    "@rmlis/e2e-env": "workspace:*",
     "convex": "^1.34.1",
     "eslint": "^9.39.2",
+    "tsx": "^4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.50.0"
   }

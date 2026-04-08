@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     "@rmlis/shared",
     "@rmlis/resend-client",
+    "@rmlis/report-core",
     "@rmlis/reporting"
   ],
   // Do not set `turbopack.root` to the monorepo root: resolution looks for

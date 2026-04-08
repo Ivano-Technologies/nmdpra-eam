@@ -6,6 +6,7 @@ dist/
 .DS_Store
 .env
 .env.*
+.env.test
 !.env.example
 .env.local
 pnpm-debug.log*

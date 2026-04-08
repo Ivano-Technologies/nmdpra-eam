@@ -1,4 +1,4 @@
-import { getResend, getResendFromEmail } from "@/lib/resend";
+import { getResendFromEmail, sendValidatedEmail } from "@/lib/resend";
 
 export type SendWeeklyEmailArgs = {
   to: string;
@@ -10,10 +10,9 @@ export async function sendWeeklyEmail({
   to,
   subject = "Your weekly compliance summary",
   html
-}: SendWeeklyEmailArgs): Promise<{ id?: string }> {
-  const resend = getResend();
+}: SendWeeklyEmailArgs): Promise<{ id: string | null }> {
   const from = getResendFromEmail();
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await sendValidatedEmail({
     from,
     to,
     subject,
@@ -22,5 +21,5 @@ export async function sendWeeklyEmail({
   if (error) {
     throw new Error(typeof error === "string" ? error : JSON.stringify(error));
   }
-  return { id: data?.id };
+  return { id: data?.id ?? null };
 }

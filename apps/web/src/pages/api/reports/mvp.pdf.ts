@@ -1,11 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { buildMvpPdf } from "@rmlis/reporting/mvp";
-import { ConvexHttpClient } from "convex/browser";
-import { makeFunctionReference } from "convex/server";
-
-const mvpReportDataQuery = makeFunctionReference<"query">(
-  "licenses:mvpReportData"
-);
+import { renderReportToPDF, type Report } from "@rmlis/report-core";
+import { ZodError } from "zod";
 
 export const config = {
   api: {
@@ -27,44 +22,15 @@ export default async function handler(
     return;
   }
 
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
-  if (!convexUrl) {
-    res.status(503).json({
-      error: "Convex not configured",
-      code: "SERVICE_UNAVAILABLE"
-    });
-    return;
-  }
-
   try {
-    const client = new ConvexHttpClient(convexUrl);
-    const data = (await client.query(mvpReportDataQuery, {})) as {
-      generatedAt: string;
-      summary: {
-        total: number;
-        expired: number;
-        critical: number;
-        warning: number;
-        safe: number;
-        expiringIn30Days: number;
-      };
-      rows: Array<{
-        vendor: string;
-        licenseType: string;
-        expiryDate: string;
-        status: string;
-        expiryStatus: string;
-        daysToExpiry: number;
-      }>;
-      topRiskVendors: Array<{ vendorName: string; riskScore: number }>;
-    };
+    const generatedAt = resolveGeneratedAt(req);
+    const reportId =
+      typeof req.query.reportId === "string" && req.query.reportId.trim()
+        ? req.query.reportId.trim()
+        : "MVP-STATIC-001";
+    const report = buildInstitutionalReport(reportId, generatedAt);
 
-    const pdf = await buildMvpPdf({
-      generatedAt: data.generatedAt,
-      summary: data.summary,
-      rows: data.rows,
-      topRiskVendors: data.topRiskVendors ?? []
-    });
+    const pdf = await renderReportToPDF(report);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -74,8 +40,78 @@ export default async function handler(
     res.setHeader("Cache-Control", "no-store");
     res.status(200).send(pdf);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Convex query failed";
-    res.status(503).json({ error: message, code: "SERVICE_UNAVAILABLE" });
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        error: "Invalid report payload",
+        code: "REPORT_VALIDATION_ERROR",
+        details: error.issues.map((issue) => ({
+          path: issue.path.join("."),
+          message: issue.message
+        }))
+      });
+      return;
+    }
+    console.error("GET /api/reports/mvp.pdf:", error);
+    res.status(500).json({
+      error: "Failed to generate report PDF",
+      code: "REPORT_RENDER_FAILED"
+    });
   }
+}
+
+function resolveGeneratedAt(req: NextApiRequest): string {
+  const fromQuery =
+    typeof req.query.generatedAt === "string" ? req.query.generatedAt : undefined;
+  const fromEnv = process.env.REPORT_FIXED_GENERATED_AT?.trim();
+  return (
+    fromQuery ??
+    fromEnv ??
+    "2026-01-01T00:00:00.000Z"
+  );
+}
+
+function buildInstitutionalReport(reportId: string, generatedAt: string): Report {
+  return {
+    meta: {
+      title: "Institutional Reporting MVP",
+      generatedAt
+    },
+    sections: [
+      {
+        type: "text",
+        content: `Institutional report ${reportId} generated for deterministic E2E validation.`
+      },
+      {
+        type: "table",
+        columns: ["Vendor", "Status", "Risk"],
+        rows: [
+          ["Astra Infrastructure", "Active", "Low"],
+          ["Helios Systems", "Warning", "Medium"],
+          ["Meridian Labs", "Critical", "High"]
+        ]
+      },
+      {
+        type: "chart",
+        title: "Risk Distribution Chart",
+        spec: {
+          $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+          width: 420,
+          height: 220,
+          data: {
+            values: [
+              { band: "Low", value: 12 },
+              { band: "Medium", value: 8 },
+              { band: "High", value: 5 }
+            ]
+          },
+          mark: "bar",
+          encoding: {
+            x: { field: "band", type: "nominal", title: "Risk band" },
+            y: { field: "value", type: "quantitative", title: "Licences" },
+            color: { field: "band", type: "nominal", legend: null }
+          }
+        }
+      }
+    ]
+  };
 }
