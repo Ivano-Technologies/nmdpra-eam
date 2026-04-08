@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { POWERED_BY_LINE } from "@/lib/brand";
 import { verifyCronRequest } from "@/lib/cron-auth";
+import { isResendConfigured } from "@/lib/resend";
 import { getAppOrigin } from "@/lib/app-origin";
 import {
   userPreferencesListDigestForPolicyQuery,
@@ -65,10 +66,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const resendKey = process.env.RESEND_API_KEY?.trim();
-  const fromConfigured = Boolean(
-    process.env.RESEND_FROM_EMAIL?.trim() && resendKey
-  );
+  const fromConfigured = isResendConfigured();
 
   const client = new ConvexHttpClient(convexUrl);
   const rows = (await client.query(userPreferencesListDigestForPolicyQuery, {

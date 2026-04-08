@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { buildComplianceReportHtml } from "@/lib/compliance-report-email";
 import { verifyCronRequest } from "@/lib/cron-auth";
-import { getResend, getResendFromEmail } from "@/lib/resend";
+import { getResendClient, getResendFromEmail, isResendConfigured } from "@/lib/resend";
 import {
   listSubscriptionsQuery,
   mvpReportDataQuery,
@@ -26,12 +26,12 @@ async function handleSendReports(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (
-    !process.env.RESEND_API_KEY?.trim() ||
-    !process.env.RESEND_FROM_EMAIL?.trim()
-  ) {
+  if (!isResendConfigured()) {
     return NextResponse.json(
-      { error: "Resend not configured (RESEND_API_KEY, RESEND_FROM_EMAIL)" },
+      {
+        error:
+          "Resend not configured (RESEND_API_KEY, RESEND_FROM_EMAIL or MOCK_RESEND=1)"
+      },
       { status: 503 }
     );
   }
@@ -44,7 +44,7 @@ async function handleSendReports(req: Request) {
 
   const client = new ConvexHttpClient(convexUrl);
   const subs = await client.query(listSubscriptionsQuery, { secret: jobSecret });
-  const resend = getResend();
+  const resend = getResendClient();
   const from = getResendFromEmail();
   const now = Date.now();
   let sent = 0;

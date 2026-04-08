@@ -9,6 +9,7 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@rmlis/resend-client": "workspace:*",
     "@rmlis/reporting": "workspace:*",
     "@rmlis/shared": "workspace:*",
     "@types/cors": "^2.8.19",

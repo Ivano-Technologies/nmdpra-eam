@@ -1,5 +1,9 @@
 import type { Request, Response } from "express";
-import { Resend } from "resend";
+import {
+  getResendClient,
+  getResendFromEmail,
+  isResendConfigured
+} from "@rmlis/resend-client";
 
 import { buildMvpPdf } from "@rmlis/reporting/mvp";
 
@@ -39,14 +43,12 @@ export const getMvpPdf = async (_req: Request, res: Response): Promise<void> => 
 };
 
 export const postMvpEmail = async (req: Request, res: Response): Promise<void> => {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  const from = process.env.RESEND_FROM_EMAIL?.trim();
   const toRaw = typeof req.body?.to === "string" ? req.body.to.trim() : "";
   const to = toRaw || process.env.REPORT_EMAIL_TO?.trim() || "";
 
-  if (!apiKey || !from) {
+  if (!isResendConfigured()) {
     res.status(503).json({
-      error: "Email not configured (RESEND_API_KEY, RESEND_FROM_EMAIL)",
+      error: "Email not configured (RESEND_API_KEY, RESEND_FROM_EMAIL or MOCK_RESEND=1)",
       code: "EMAIL_NOT_CONFIGURED"
     });
     return;
@@ -86,7 +88,8 @@ export const postMvpEmail = async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  const resend = new Resend(apiKey);
+  const from = getResendFromEmail();
+  const resend = getResendClient();
   const { data: sent, error } = await resend.emails.send({
     from,
     to,

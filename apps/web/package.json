@@ -5,7 +5,7 @@
   "description": "Ivano IQ web app — Next.js (App Router): marketing site, Clerk auth, and operational intelligence dashboard.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node ./scripts/generate-favicons.mjs && pnpm --filter @rmlis/shared run build",
+    "prebuild": "node ./scripts/generate-favicons.mjs && pnpm --filter @rmlis/shared run build && pnpm --filter @rmlis/reporting run build",
     "generate:favicons": "node ./scripts/generate-favicons.mjs",
     "build": "next build",
     "start": "next start",
@@ -26,6 +26,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@rmlis/reporting": "workspace:*",
+    "@rmlis/resend-client": "workspace:*",
     "@rmlis/shared": "workspace:*",
     "@vercel/blob": "^2.3.2",
     "class-variance-authority": "^0.7.1",
@@ -47,6 +49,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@rmlis/e2e-env": "workspace:*",
     "@clerk/testing": "^2.0.8",
     "@playwright/test": "^1.49.1",
     "@radix-ui/react-slot": "^1.2.4",

@@ -13,7 +13,11 @@ const backendApiOrigin =
   process.env.BACKEND_API_ORIGIN?.trim().replace(/\/$/, "") ?? "";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@rmlis/shared"],
+  transpilePackages: [
+    "@rmlis/shared",
+    "@rmlis/resend-client",
+    "@rmlis/reporting"
+  ],
   // Do not set `turbopack.root` to the monorepo root: resolution looks for
   // `node_modules/@rmlis/shared` from that root, but pnpm links the workspace
   // package under `apps/web/node_modules`, which breaks Vercel builds.
