@@ -1,105 +1,98 @@
+# Landing page snapshot (`/`)
+
+Structural outline aligned with `apps/web/src/app/page.tsx` and landing components (static HTML order). Refs are illustrative (e.g. Playwright accessibility tree style), not stable IDs.
+
+```yaml
 - generic [active] [ref=e1]:
   - main [ref=e2]:
-    - generic [ref=e4]:
-      - link "Ivano IQ home" [ref=e5] [cursor=pointer]:
+    # LandingTopNav — sticky header
+    - banner [ref=e3]:
+      - link "Ivano IQ home" [ref=e4] [cursor=pointer]:
         - /url: /
-        - generic [ref=e7]:
-          - img [ref=e9]
-          - generic [ref=e12]: Ivano IQ
-      - navigation [ref=e149]:
-        - generic [ref=e150]:
-          - button "Login" [ref=e151]
-          - button "Sign up" [ref=e152]
-    - button "Explore the Platform" [ref=e154]
-    - generic [ref=e14]:
-      - paragraph [ref=e15]: Trusted by regulators, operators, and compliance teams
-      - generic [ref=e16]:
-        - generic [ref=e17]: Real-time monitoring
-        - generic [ref=e18]: Audit-ready reporting
-        - generic [ref=e19]: Risk intelligence
-      - generic [ref=e20]:
-        - generic [ref=e21]:
-          - paragraph [ref=e22]: 1,200+
-          - paragraph [ref=e23]: Licences tracked
-        - generic [ref=e24]:
-          - paragraph [ref=e25]: 30+
-          - paragraph [ref=e26]: Organizations
-        - generic [ref=e27]:
-          - paragraph [ref=e28]: 99.9%
-          - paragraph [ref=e29]: Uptime
-    - generic [ref=e31]:
+        - img [ref=e5]
+        - generic [ref=e6]: Ivano IQ
+      - navigation [ref=e7]:
+        # Signed-out
+        - button "Login" [ref=e8]
+        - button "Sign up" [ref=e9]
+        # Signed-in (alternate): link "Dashboard", UserButton menu
+
+    # LandingHero
+    - region [ref=e10]:
+      - link "Explore the Platform" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard
+
+    # LandingFeatures — id="platform"
+    - region [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - img [ref=e15]
+          - heading "Unified Visibility" [level=3] [ref=e16]
+          - paragraph [ref=e17]: One lens across licences and assets — turn fragmented data into a single operational picture.
+        - generic [ref=e18]:
+          - img [ref=e19]
+          - heading "Intelligent Risk Detection" [level=3] [ref=e20]
+          - paragraph [ref=e21]: Prioritize what matters with explainable signals, not just raw counts.
+        - generic [ref=e22]:
+          - img [ref=e23]
+          - heading "Audit-Ready Intelligence" [level=3] [ref=e24]
+          - paragraph [ref=e25]: Export evidence and narratives stakeholders can defend — insight first, spreadsheets second.
+
+    # LandingShowcase — region "Product showcase"
+    - region "Product showcase" [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - heading "See all your licences in one place" [level=2] [ref=e29]
+          - paragraph [ref=e30]: Unified visibility across assets, vendors, and licence types.
+        - img "Dashboard overview with KPIs and risk summary" [ref=e31]
       - generic [ref=e32]:
-        - img [ref=e33]
-        - heading "Unified Visibility" [level=3] [ref=e35]
-        - paragraph [ref=e36]: One lens across licences and assets — turn fragmented data into a single operational picture.
+        - generic [ref=e33]:
+          - heading "Identify risks before regulators do" [level=2] [ref=e34]
+          - paragraph [ref=e35]: Ranked risk scores and expiry signals so you act first.
+        - img "Risk ranking and alerts" [ref=e36]
       - generic [ref=e37]:
-        - img [ref=e38]
-        - heading "Intelligent Risk Detection" [level=3] [ref=e40]
-        - paragraph [ref=e41]: Prioritize what matters with explainable signals, not just raw counts.
-      - generic [ref=e42]:
-        - img [ref=e43]
-        - heading "Audit-Ready Intelligence" [level=3] [ref=e46]
-        - paragraph [ref=e47]: Export evidence and narratives stakeholders can defend — insight first, spreadsheets second.
-    - generic [ref=e48]:
-      - heading "Who it's for" [level=2] [ref=e49]
-      - paragraph [ref=e50]: Built for high-stakes licensing workflows — clarity for every stakeholder.
-      - generic [ref=e51]:
-        - generic [ref=e52]:
-          - img [ref=e53]
-          - heading "For regulators" [level=3] [ref=e57]
-          - paragraph [ref=e58]: Oversight-ready views, evidence trails, and consistent reporting across operators.
-        - generic [ref=e59]:
-          - img [ref=e60]
-          - heading "For operators" [level=3] [ref=e64]
-          - paragraph [ref=e65]: One place to track asset-level licences, expiries, and vendor exposure.
-        - generic [ref=e66]:
-          - img [ref=e67]
-          - heading "For compliance teams" [level=3] [ref=e69]
-          - paragraph [ref=e70]: Proactive alerts, risk ranking, and audit packs without spreadsheet chaos.
-    - region "Product showcase" [ref=e71]:
-      - generic [ref=e72]:
-        - generic [ref=e73]:
-          - heading "See all your licences in one place" [level=2] [ref=e74]
-          - paragraph [ref=e75]: Unified visibility across assets, vendors, and licence types.
-        - img "Dashboard overview with KPIs and risk summary" [ref=e83]
-      - generic [ref=e84]:
-        - generic [ref=e85]:
-          - heading "Identify risks before regulators do" [level=2] [ref=e86]
-          - paragraph [ref=e87]: Ranked risk scores and expiry signals so you act first.
-        - img "Risk ranking and alerts" [ref=e95]
-      - generic [ref=e96]:
-        - generic [ref=e97]:
-          - heading "Generate reports in seconds" [level=2] [ref=e98]
-          - paragraph [ref=e99]: Export-ready PDFs and email delivery for audit workflows.
-        - img "Reports and export options" [ref=e107]
-    - generic [ref=e109]:
-      - heading "Smart insights powered by your data" [level=2] [ref=e110]
-      - paragraph [ref=e111]: Tie operational signals to decisions — weekly digests, risk ranks, and proactive alerts in one place.
-      - list [ref=e112]:
-        - listitem [ref=e113]:
-          - img [ref=e114]
-          - heading "Weekly insights" [level=3] [ref=e117]
-          - paragraph [ref=e118]: Digest what changed in your licence portfolio without manual triage.
-        - listitem [ref=e119]:
-          - img [ref=e120]
-          - heading "Risk scoring" [level=3] [ref=e128]
-          - paragraph [ref=e129]: Prioritize vendors and expiries using consistent, explainable signals.
-        - listitem [ref=e130]:
-          - img [ref=e131]
-          - heading "Alerts" [level=3] [ref=e134]
-          - paragraph [ref=e135]: Surface what needs attention before it becomes an audit finding.
-    - button "Get Started" [ref=e156]
-    - note [ref=e138]: Powered by Techivano
+        - generic [ref=e38]:
+          - heading "Generate reports in seconds" [level=2] [ref=e39]
+          - paragraph [ref=e40]: Export-ready PDFs and email delivery for audit workflows.
+        - img "Reports and export options" [ref=e41]
+
+    # LandingAiLayer
+    - region [ref=e42]:
+      - heading "Smart insights powered by your data" [level=2] [ref=e43]
+      - paragraph [ref=e44]: Tie operational signals to decisions — weekly digests, risk ranks, and proactive alerts in one place.
+      - list [ref=e45]:
+        - listitem [ref=e46]:
+          - img [ref=e47]
+          - heading "Weekly insights" [level=3] [ref=e48]
+          - paragraph [ref=e49]: Digest what changed in your licence portfolio without manual triage.
+        - listitem [ref=e50]:
+          - img [ref=e51]
+          - heading "Risk scoring" [level=3] [ref=e52]
+          - paragraph [ref=e53]: Prioritize vendors and expiries using consistent, explainable signals.
+        - listitem [ref=e54]:
+          - img [ref=e55]
+          - heading "Alerts" [level=3] [ref=e56]
+          - paragraph [ref=e57]: Surface what needs attention before it becomes an audit finding.
+
+    # LandingFinalCta — signed-out shows Sign up modal trigger; signed-in shows dashboard link
+    - region [ref=e58]:
+      - button "Get Started" [ref=e59]   # signed-out (SignUpButton)
+      # or link "Open Dashboard" [ref=e60]  # signed-in
+
+    - contentinfo [ref=e61]:
+      - note [ref=e62]: Powered by Techivano
+
+  # Outside main: notifications, dev overlays in local dev only
   - region "Notifications alt+T"
-  - button "Open Next.js Dev Tools" [ref=e144] [cursor=pointer]:
-    - img [ref=e145]
-  - alert [ref=e148]
-  - generic [ref=e157]:
-    - button "Keyless prompt" [expanded] [ref=e158] [cursor=pointer]:
-      - img [ref=e159]
-      - generic [ref=e163]: Missing environment keys
-      - img [ref=e164]
-    - generic [ref=e167]:
-      - paragraph [ref=e169]: You claimed this application but haven't set keys in your environment. Get them from the Clerk Dashboard.
-      - link "Get API keys" [ref=e170] [cursor=pointer]:
-        - /url: https://dashboard.clerk.com/apps/app_3BmJBkuTc9CHaLQZZtwZMrzaySN/instances/ins_3BmJBnECTI1htnbg3S9dp9ZoNMS/api-keys
+```
+
+## Removed sections (no longer on the page)
+
+- Trust / social proof strip (“Trusted by regulators…”, tags, stat counters) — was `LandingTrustStrip`.
+- “Who it’s for” block (subtitle and three audience cards) — was `LandingWhoItsFor`.
+
+## Source order
+
+`HomePage`: `LandingTopNav` → `LandingHero` → `LandingFeatures` → `LandingShowcase` → `LandingAiLayer` → `LandingFinalCta` → `footer` (`PoweredByTechivano`).
+
+Last refreshed: 2026-04-08 (matches repo after removal of trust strip + who-it’s-for).

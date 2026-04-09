@@ -7,11 +7,10 @@ test.describe("Home", () => {
     await expect(hero.getByText("Explore the Platform").first()).toBeVisible();
   });
 
-  test("shows trust strip and product sections", async ({ page }) => {
+  test("shows product feature sections", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByText(/Trusted by regulators, operators, and compliance teams/i)
+      page.getByRole("heading", { name: /Unified Visibility/i })
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Who it's for/i })).toBeVisible();
   });
 });
