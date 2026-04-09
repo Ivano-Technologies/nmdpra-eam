@@ -37,6 +37,26 @@ export const mvpReportDataQuery = makeFunctionReference<"query">(
   "licenses:mvpReportData"
 );
 
+export const expiringBucketsQuery = makeFunctionReference<"query">(
+  "licenses:expiringBuckets"
+);
+
+export const listAllForCsvQuery = makeFunctionReference<"query">(
+  "licenses:listAllForCsv"
+);
+
+export const backgroundJobsCreateMutation = makeFunctionReference<"mutation">(
+  "backgroundJobs:create"
+);
+
+export const backgroundJobsPatchMutation = makeFunctionReference<"mutation">(
+  "backgroundJobs:patch"
+);
+
+export const backgroundJobsGetQuery = makeFunctionReference<"query">(
+  "backgroundJobs:getForUser"
+);
+
 export const deleteOrgDataMutation = makeFunctionReference<"mutation">(
   "orgDeletion:deleteOrgData"
 );

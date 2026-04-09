@@ -5,7 +5,7 @@
   "description": "Ivano IQ web app — Next.js (App Router): marketing site, Clerk auth, and operational intelligence dashboard.",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node ./scripts/generate-favicons.mjs && pnpm --filter @rmlis/shared run build && pnpm --filter @rmlis/reporting run build",
+    "prebuild": "node ./scripts/generate-favicons.mjs && pnpm --filter @rmlis/shared run build && pnpm --filter @rmlis/report-core run build && pnpm --filter @rmlis/reporting run build",
     "generate:favicons": "node ./scripts/generate-favicons.mjs",
     "build": "next build",
     "start": "next start",

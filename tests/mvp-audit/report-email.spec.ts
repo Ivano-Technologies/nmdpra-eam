@@ -12,7 +12,7 @@ test.describe("Report + email flow", () => {
     expect(pdfRes.status()).toBe(200);
     expect(pdfRes.headers()["content-type"]).toContain("application/pdf");
     const pdfBuffer = await pdfRes.body();
-    expect(pdfBuffer.byteLength).toBeGreaterThan(5000);
+    expect(pdfBuffer.byteLength).toBeGreaterThan(2000);
     const parsed = await pdfParse(Buffer.from(pdfBuffer));
     expect(parsed.text).toContain("Institutional Reporting MVP");
 

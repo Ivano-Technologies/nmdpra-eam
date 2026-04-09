@@ -19,6 +19,48 @@ type ExcelUploadCardProps = {
   onUploadSuccess?: () => void | Promise<void>;
 };
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type JobPollOutcome = {
+  status: "complete" | "failed";
+  result?: unknown;
+  error?: string;
+};
+
+async function pollJobUntilDone(
+  jobId: string,
+  getToken: () => Promise<string | null>
+): Promise<JobPollOutcome> {
+  for (;;) {
+    const token = await getToken();
+    const res = await fetch(`/api/jobs/${encodeURIComponent(jobId)}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    const body = (await res.json().catch(() => ({}))) as {
+      status?: string;
+      result?: unknown;
+      error?: string;
+    };
+    if (!res.ok) {
+      throw new Error(
+        typeof body.error === "string"
+          ? body.error
+          : `Job status failed (${res.status})`
+      );
+    }
+    if (body.status === "complete" || body.status === "failed") {
+      return {
+        status: body.status,
+        result: body.result,
+        error: body.error
+      };
+    }
+    await sleep(3000);
+  }
+}
+
 export function ExcelUploadCard({ onUploadSuccess }: ExcelUploadCardProps = {}) {
   const { getToken } = useAuth();
   const { user } = useUser();
@@ -56,21 +98,48 @@ export function ExcelUploadCard({ onUploadSuccess }: ExcelUploadCardProps = {}) 
           body: fd,
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        const body = (await res.json().catch(() => ({}))) as {
-          error?: string;
-          imported?: number;
-          warnings?: string[];
-        };
-        if (!res.ok) {
-          throw new Error(body.error ?? `Upload failed (${res.status})`);
+
+        let imported = 0;
+        let warnings: string[] = [];
+
+        if (res.status === 202) {
+          const started = (await res.json()) as { jobId?: string };
+          if (!started.jobId?.trim()) {
+            throw new Error("Missing jobId from server");
+          }
+          const outcome = await pollJobUntilDone(started.jobId, getToken);
+          if (outcome.status === "failed") {
+            throw new Error(outcome.error ?? "Upload failed");
+          }
+          const result = outcome.result as
+            | {
+                imported?: number;
+                warnings?: string[];
+              }
+            | undefined;
+          imported = result?.imported ?? 0;
+          warnings = result?.warnings ?? [];
+        } else {
+          const body = (await res.json().catch(() => ({}))) as {
+            error?: string;
+            code?: string;
+            imported?: number;
+            warnings?: string[];
+          };
+          if (!res.ok) {
+            throw new Error(body.error ?? `Upload failed (${res.status})`);
+          }
+          imported = body.imported ?? 0;
+          warnings = body.warnings ?? [];
         }
+
         await fetch("/api/user/consent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ scope: "upload" })
         }).catch(() => undefined);
         toast.success(
-          `Imported ${body.imported ?? 0} row(s).${body.warnings?.length ? " See warnings in response." : ""}`
+          `Imported ${imported} row(s).${warnings.length ? " See warnings in response." : ""}`
         );
         await onUploadSuccess?.();
         input.value = "";

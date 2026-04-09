@@ -61,12 +61,6 @@ export function OnboardingChecklist({
         id: "subscription",
         label: "Verify a report email subscription (owners)",
         done: o.reportSubscriptionVerified === true
-      },
-      {
-        id: "teammate",
-        label: "Invite a teammate",
-        done: o.inviteTeammate === true,
-        href: "https://clerk.com/docs/organizations/invitations"
       }
     ];
   }, [preferences?.onboardingSteps, termsAccepted, orgConfirmed]);

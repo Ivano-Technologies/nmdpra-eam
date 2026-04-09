@@ -59,7 +59,24 @@ test.describe("Data upload (admin/owner)", () => {
     ]);
 
     // 500: invalid/missing Vercel Blob token in local E2E (upstream "Access denied")
-    expect([200, 400, 403, 500, 503]).toContain(uploadRes.status());
+    expect([200, 202, 400, 403, 500, 503]).toContain(uploadRes.status());
+
+    if (uploadRes.status() === 202) {
+      const { jobId } = (await uploadRes.json()) as { jobId?: string };
+      if (jobId?.trim()) {
+        const deadline = Date.now() + 120_000;
+        while (Date.now() < deadline) {
+          await page.waitForTimeout(3000);
+          const jr = await page.request.get(
+            `/api/jobs/${encodeURIComponent(jobId)}`
+          );
+          const j = (await jr.json()) as { status?: string };
+          if (j.status === "complete" || j.status === "failed") {
+            break;
+          }
+        }
+      }
+    }
     await screenshotStep(page, "upload-after-submit");
   });
 });

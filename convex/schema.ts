@@ -139,5 +139,20 @@ export default defineSchema({
     key: v.string(),
     windowEnds: v.number(),
     count: v.number()
-  }).index("by_key", ["key"])
+  }).index("by_key", ["key"]),
+
+  /** Async work started from Next (e.g. upload ingest); polled via GET /api/jobs/[jobId]. */
+  backgroundJobs: defineTable({
+    userId: v.string(),
+    status: v.union(
+      v.literal("processing"),
+      v.literal("complete"),
+      v.literal("failed")
+    ),
+    kind: v.optional(v.string()),
+    result: v.optional(v.any()),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number()
+  }).index("by_user", ["userId"])
 });

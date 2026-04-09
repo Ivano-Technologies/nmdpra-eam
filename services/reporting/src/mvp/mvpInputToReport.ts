@@ -1,4 +1,4 @@
-import type { Report } from "@rmlis/report-core";
+import type { Report } from "@rmlis/report-core/server";
 
 import type { MvpReportInput } from "./renderMvpReport";
 

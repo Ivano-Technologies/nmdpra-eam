@@ -16,10 +16,7 @@ const mvpReportDataQuery = makeFunctionReference<"query">(
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
-/**
- * Email MVP report when `BACKEND_API_ORIGIN` is unset.
- * Mirrors {@link apps/api/src/controllers/reportController.ts} `postMvpEmail`.
- */
+/** Email MVP report with optional PDF attachment (Convex + Resend). */
 export async function POST(req: NextRequest) {
   let body: { to?: string };
   try {

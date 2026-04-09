@@ -7,6 +7,6 @@ COPY . .
 RUN corepack enable
 ENV CI=true
 RUN pnpm install
-RUN pnpm --filter @rmlis/api build
+RUN pnpm --filter @rmlis/web build
 
-CMD ["pnpm", "--filter", "@rmlis/api", "start"]
+CMD ["pnpm", "--filter", "@rmlis/web", "start"]

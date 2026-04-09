@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { renderReportToPDF, type Report } from "@rmlis/report-core";
+import { renderReportToPDF, type Report } from "@rmlis/report-core/server";
 import { ZodError } from "zod";
 
 export const config = {
@@ -8,13 +8,7 @@ export const config = {
   }
 };
 
-/** Vercel / Fluid: allow time for Chromium + chart render (default is often 10s). */
-export const maxDuration = 60;
-
-/**
- * PDF when `BACKEND_API_ORIGIN` is unset (no rewrite to Express).
- * Mirrors {@link apps/api/src/controllers/reportController.ts} `getMvpPdf`.
- */
+/** Institutional MVP PDF for E2E and direct download. */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

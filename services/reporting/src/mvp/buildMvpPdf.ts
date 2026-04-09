@@ -1,4 +1,4 @@
-import { renderReportToPDF } from "@rmlis/report-core";
+import { renderReportToPDF } from "@rmlis/report-core/server";
 
 import type { MvpReportInput } from "./renderMvpReport";
 import { mvpInputToReport } from "./mvpInputToReport";

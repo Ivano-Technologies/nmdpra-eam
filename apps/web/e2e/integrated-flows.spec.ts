@@ -90,9 +90,26 @@ test.describe("Integrated dashboard flows", () => {
 
     const status = uploadRes.status();
     expect(status).toBeLessThan(500);
-    expect([200, 400, 403, 503]).toContain(status);
+    expect([200, 202, 400, 403, 503]).toContain(status);
 
-    if (status === 200) {
+    if (status === 202) {
+      const { jobId } = (await uploadRes.json()) as { jobId?: string };
+      expect(jobId?.trim().length).toBeGreaterThan(0);
+      const deadline = Date.now() + 120_000;
+      let last = "processing";
+      while (Date.now() < deadline) {
+        await page.waitForTimeout(3000);
+        const jr = await page.request.get(
+          `/api/jobs/${encodeURIComponent(jobId!)}`
+        );
+        const j = (await jr.json()) as { status?: string };
+        if (j.status === "complete" || j.status === "failed") {
+          last = j.status;
+          break;
+        }
+      }
+      expect(last).toBe("complete");
+    } else if (status === 200) {
       const body = (await uploadRes.json()) as {
         success?: boolean;
         imported?: number;
@@ -150,9 +167,26 @@ test.describe("Integrated dashboard flows", () => {
 
     const status = uploadRes.status();
     expect(status).toBeLessThan(500);
-    expect([200, 400, 403, 503]).toContain(status);
+    expect([200, 202, 400, 403, 503]).toContain(status);
 
-    if (status === 200) {
+    if (status === 202) {
+      const { jobId } = (await uploadRes.json()) as { jobId?: string };
+      expect(jobId?.trim().length).toBeGreaterThan(0);
+      const deadline = Date.now() + 180_000;
+      let last = "processing";
+      while (Date.now() < deadline) {
+        await page.waitForTimeout(3000);
+        const jr = await page.request.get(
+          `/api/jobs/${encodeURIComponent(jobId!)}`
+        );
+        const j = (await jr.json()) as { status?: string };
+        if (j.status === "complete" || j.status === "failed") {
+          last = j.status;
+          break;
+        }
+      }
+      expect(last).toBe("complete");
+    } else if (status === 200) {
       const body = (await uploadRes.json()) as {
         success?: boolean;
         imported?: number;

@@ -2,7 +2,7 @@
 
 Next.js (App Router) frontend for **Ivano IQ**: marketing site, Clerk sign-in, and authenticated operational-intelligence dashboard, backed by the Express API.
 
-Clerk runs via [`src/proxy.ts`](src/proxy.ts) (`clerkMiddleware` from `@clerk/nextjs/server`); `/dashboard` is protected. [`src/app/layout.tsx`](src/app/layout.tsx) wraps the app with `<ClerkProvider>` inside `<body>`.
+Clerk runs via [`src/middleware.ts`](src/middleware.ts) (`clerkMiddleware` from `@clerk/nextjs/server`); `/dashboard` is protected. [`src/app/layout.tsx`](src/app/layout.tsx) wraps the app with `<ClerkProvider>` inside `<body>`.
 
 ## Security note (MVP)
 

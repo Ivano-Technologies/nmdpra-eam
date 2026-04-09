@@ -8,7 +8,8 @@ test.describe("PDF generation", () => {
     expect(res.headers()["content-type"]).toContain("application/pdf");
 
     const buffer = await res.body();
-    expect(buffer.byteLength).toBeGreaterThan(5000);
+    // @react-pdf/renderer output is much smaller than the old Puppeteer/Chromium PDFs.
+    expect(buffer.byteLength).toBeGreaterThan(2000);
 
     const parsed = await pdfParse(Buffer.from(buffer));
     expect(parsed.text).toContain("Institutional Reporting MVP");
